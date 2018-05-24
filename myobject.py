@@ -64,24 +64,27 @@ class MyObject:
 			# 1. Sort it based on its weight
 			# 2. Push from the smallest to the highest with no cyclic
 			self.DelMyMstAll()
-			cyclicchecker=Graph(len(self.__myline))
+			cyclicchecker=Graph(len(self.__myvertex))
 			for i in range(0,len(self.__myline)):
 				index = i 
 				temp = self.__myline[i].GetWeight()
 				for j in range(i+1,len(self.__myline)):
-					temp2 = self.__myline[i].GetWeight()
+					temp2 = self.__myline[j].GetWeight()
 					if (temp2<temp):
-						temp2=temp
+						temp=temp2
 						index=j
 				temp = self.__myline[i]
 				self.__myline[i]=self.__myline[index]
 				self.__myline[index]=temp
+				#print(self.__myline[i].GetWeight())
+
 			for i in range(0,len(self.__myline)):
 				cyclicchecker.addEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
 				if (cyclicchecker.isCyclic()):
 					cyclicchecker.deleteEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
 				else:
 					self.__mymst.append(self.__myline[i])
+			del cyclicchecker
 		elif (algorithm=="Djikstra"):
 			self.DelMyMstAll()
 			#
@@ -139,9 +142,66 @@ class MyObject:
 
 				predec=u
 			print(route[val2])
+
+
 		elif(algorithm=="Prims"):
+			self.DelMyMstAll()
 			visited=[]
+			mylist=[]
+			mylist_cyclic=[]
+			for i in range (0,len(self.__myvertex)):
+				visited.append(False)
+
+			visited[val1]=True
+
+			for i in range (0, len(self.__myline)):
+				if (self.__myline[i].GetVstart()==val1 or self.__myline[i].GetVend()==val1):
+					mylist.append(i)
+					# i-th line with 0 means not yet taken
+			cyclicchecker=Graph(len(self.__myvertex))
+
+			while(len(mylist)!=0):
+				smallest=self.__intmax
+				idx=0
+				for i in range(0,len(mylist)):
+					if (smallest>self.__myline[mylist[i]].GetWeight()):
+						smallest=self.__myline[mylist[i]].GetWeight()
+						idx=i
+
+				cyclicchecker.addEdge(self.__myline[mylist[idx]].GetVstart(),self.__myline[mylist[idx]].GetVend())
+				
+				if (cyclicchecker.isCyclic()):
+					cyclicchecker.deleteEdge(self.__myline[mylist[idx]].GetVstart(),self.__myline[mylist[idx]].GetVend())
+					mylist_cyclic.append(mylist[idx])
+					del mylist[idx]
+
+				else:
+					self.__mymst.append(self.__myline[mylist[idx]])
+					target=0
+					if (visited[self.__myline[mylist[idx]].GetVstart()]==True):
+						target=self.__myline[mylist[idx]].GetVend()
+						visited[target]=True
+					else:
+						target=self.__myline[mylist[idx]].GetVstart()
+						visited[target]=True
+
+					
+
+					for j in range(0,len(self.__myline)):
+						if (self.__myline[j].GetVstart()==target and visited[self.__myline[j].GetVend()]==False):
+							mylist.append(j)
+							
+						elif (self.__myline[j].GetVend()==target and visited[self.__myline[j].GetVstart()]==False):
+							mylist.append(j)
+		
 			
+					visited[target]=True
+					del mylist[idx]
+			del cyclicchecker
+		elif (algorithm=="coloring"):
+			
+		for i in range(0,len(self.__mymst)):
+			print(str(self.__mymst[i].GetVstart()) + " " + str(self.__mymst[i].GetVend()))
 		#end of conditional algorithm
 	#end of compute method
 #end of class

@@ -36,8 +36,8 @@ class Graph:
         return False
 
     def deleteEdge(self,v,w):
-        del self.graph[v]
-        del self.graph[w]
+        x= self.graph[v].pop()
+        x= self.graph[w].pop()
   
     #Returns true if the graph contains a cycle, else false.
     def isCyclic(self):
