@@ -1,60 +1,62 @@
-from tkinter import *
+import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import scrolledtext as tkst
+from draggable import Draggable
 
-root = Tk()
-root.title('Tes')
-vertexNum = 1
-def log(msg):
-    scrolltext.config(state=NORMAL)
-    scrolltext.insert(INSERT,msg+'\n')
-    scrolltext.config(state=DISABLED)
+class Gui(ttk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.pack()
+        self.create_widgets()
 
-def drawVertex(event):
-    global vertexNum
-    x, y = event.x, event.y
-    r = 20
-    secondcanvas.create_oval(x+r, y+r, x-r,y-r,fill="#00BCD4", outline="#0097A7", width=2, tags=str(vertexNum))
-    secondcanvas.create_text(x,y,text=str(vertexNum), tags=str(vertexNum))
-    vertexNum +=1
-    log('Vertex created at '+str(x)+' and '+str(y))
+    def create_widgets(self):
+        self.vertexNum = 1
+        self.mainframe = ttk.Frame(self, padding="3 3 12 12")
+        self.mainframe.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+        self.mainframe.columnconfigure(0, weight=1)
+        self.mainframe.rowconfigure(0, weight=1)
 
-def delAll(*args):
-    secondcanvas.delete("all")
+        self.toolbar = ttk.Frame(self.mainframe,padding="3 3 12 12")
+        self.toolbar.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 
-mainframe = ttk.Frame(root, padding="3 3 12 12")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-mainframe.columnconfigure(0, weight=1)
-mainframe.rowconfigure(0, weight=1)
+        self.btnAdd = ttk.Button(self.toolbar, text="Add")
+        self.btnAdd.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
+        #btnAdd.bind("<Button-1>", hello)
 
-toolbar = ttk.Frame(mainframe,padding="3 3 12 12")
-toolbar.grid(column=0, row=0, sticky=(N, W, E, S))
+        self.btnClear = ttk.Button(self.toolbar, text="Clear")
+        self.btnClear.grid(column=1, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
+        self.btnClear.bind("<Button-1>", self.delAll)
 
-btnAdd = ttk.Button(toolbar, text="Add")
-btnAdd.grid(column=0, row=0, sticky=(N, W, E, S))
-#btnAdd.bind("<Button-1>", hello)
+        self.mode = tk.StringVar()
+        self.dropdown = ttk.Combobox(self.toolbar, textvariable=self.mode, state='readonly')
+        self.dropdown['values'] = ("Djikstra", "Prims", "Kruskal", "Coloring", "Fuery")
+        self.dropdown.grid(column=2, row = 0, padx=(10,10))
+        self.dropdown.current(0)
 
-btnClear = ttk.Button(toolbar, text="Clear")
-btnClear.grid(column=1, row=0, sticky=(N, W, E, S), padx=(10,10))
-btnClear.bind("<Button-1>", delAll)
+        self.workspace = ttk.Frame(self.mainframe,padding="3 3 12 12")
+        self.workspace.grid(column=0, row=1, sticky=(tk.N, tk.W, tk.E, tk.S))
 
-mode = StringVar()
-dropdown = ttk.Combobox(toolbar, textvariable=mode, state='readonly')
-dropdown['values'] = ("Djikstra", "Prims", "Kruskal", "Coloring", "Fuery")
-dropdown.grid(column=2, row = 0, padx=(10,10))
-dropdown.current(0)
+        self.scrolltext = tkst.ScrolledText(self.workspace, width=40, height=10, borderwidth = 5, relief = "sunken",state=tk.DISABLED)
+        self.scrolltext.grid(column=1, row = 1, sticky=(tk.N, tk.W, tk.E, tk.S))
 
-workspace = ttk.Frame(mainframe,padding="3 3 12 12")
-workspace.grid(column=0, row=1, sticky=(N, W, E, S))
+        self.secondcanvas = tk.Canvas(self.workspace, width=720, height=480, borderwidth = 5, relief = "sunken")
+        self.secondcanvas.grid(column=0, row = 1, sticky=(tk.N, tk.W, tk.E, tk.S))
+        self.secondcanvas.bind("<Button-1>", self.drawVertex)
 
-scrolltext = tkst.ScrolledText(workspace, width=40, height=10, borderwidth = 5, relief = "sunken",state=DISABLED)
-scrolltext.grid(column=1, row = 1, sticky=(N, W, E, S))
+    def log(self, msg):
+        self.scrolltext.config(state=tk.NORMAL)
+        self.scrolltext.insert(tk.INSERT,msg+'\n')
+        self.scrolltext.config(state=tk.DISABLED)
 
-secondcanvas = Canvas(workspace, width=720, height=480, borderwidth = 5, relief = "sunken")
-secondcanvas.grid(column=0, row = 1, sticky=(N, W, E, S))
-secondcanvas.bind("<Button-1>", drawVertex)
+    def drawVertex(self, event):
+        x, y = event.x, event.y
+        r = 20
+        self.secondcanvas.create_oval(x+r, y+r, x-r,y-r,fill="#00BCD4", outline="#0097A7", width=2, tags=str(self.vertexNum))
+        self.secondcanvas.create_text(x,y,text=str(self.vertexNum), tags=str(self.vertexNum))
+        # circle = Draggable(circle)
+        self.vertexNum +=1
+        self.log('Vertex created at '+str(x)+' and '+str(y))
 
-
-
-root.mainloop()
+    def delAll(self, *args):
+        self.secondcanvas.delete("all")
