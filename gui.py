@@ -92,15 +92,27 @@ class Gui(ttk.Frame):
                 if self.secondcanvas.find_withtag('ln'+str(self.lineNum)):
                     self.secondcanvas.coords('ln'+str(self.lineNum),xline,yline, x, y)
                 else:
-                    self.secondcanvas.create_line((xline,yline, x, y), fill='blue', width=3, tags=('ln'+str(self.lineNum),'l'+vtag,'line'))
+                    self.secondcanvas.create_line((xline,yline, x, y), fill='blue', width=3, tags=('ln'+str(self.lineNum),'lo'+vtag,'line'))
                     
         elif cekmode == 'edit':
             r = 20
             vtag = self.currentvertex
             if  vtag != False:
                 v = self.secondcanvas.find_withtag(vtag)
+                li = self.secondcanvas.find_withtag('li'+vtag)
+                lo = self.secondcanvas.find_withtag('lo'+vtag)
                 self.secondcanvas.coords(v[0],x+r, y+r, x-r,y-r)
                 self.secondcanvas.coords(v[1],x, y)
+                self.log('vtag '+str(v))
+                self.log('li '+str(li))
+                self.log('lo '+str(lo))
+                for i in lo:
+                    linecoord = self.secondcanvas.coords(i)
+                    self.secondcanvas.coords(i,x,y,linecoord[2],linecoord[3])
+                for i in li:
+                    linecoord = self.secondcanvas.coords(i)
+                    self.secondcanvas.coords(i,linecoord[0],linecoord[1],x,y)
+                
 
     def cLeftRelease(self, event):
         cekmode = self.mode
@@ -114,6 +126,7 @@ class Gui(ttk.Frame):
                 if self.secondcanvas.find_withtag('ln'+str(self.lineNum)):
                     linecoord = self.secondcanvas.coords('ln'+str(self.lineNum))
                     self.secondcanvas.coords('ln'+str(self.lineNum),linecoord[0],linecoord[1],xver,yver)
+                    self.secondcanvas.addtag_withtag('li'+vtag,'ln'+str(self.lineNum))
                     self.lineNum +=1
 
         vtag  = self.currentvertex
@@ -149,6 +162,8 @@ class Gui(ttk.Frame):
         if vtag != False:
             self.log('vertex '+str(vtag)+' deleted')
             self.secondcanvas.delete(vtag)
+            self.secondcanvas.delete('li'+vtag)
+            self.secondcanvas.delete('lo'+vtag)
 
     
     def isIntersect(self, x, y):
