@@ -56,6 +56,7 @@ class Gui(ttk.Frame):
         self.secondcanvas.grid(column=0, row = 1, sticky=(tk.N, tk.W, tk.E, tk.S))
         self.secondcanvas.bind("<Button-1>", self.cLeft)
         self.secondcanvas.bind("<Button-2>", self.cRight)
+        self.secondcanvas.bind("<Button-3>", self.cRight)
         self.secondcanvas.bind("<B1-Motion>", self.cLeftMotion)
         self.secondcanvas.bind("<B1-ButtonRelease>", self.cLeftRelease)
 
