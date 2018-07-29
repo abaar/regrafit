@@ -240,8 +240,8 @@ class Gui(ttk.Frame):
         try:
             nextline=self.lines.pop(0)
             self.log(nextline)
-            self.secondcanvas.itemconfigure(nextline[0],state='normal')
-            self.secondcanvas.after(1000,self.showline())
+            self.secondcanvas.itemconfigure(nextline,state='normal')
+            self.secondcanvas.after(1000,self.showline)
         except IndexError:
             pass
 
@@ -253,20 +253,23 @@ class Gui(ttk.Frame):
         allvertex = self.secondcanvas.find_withtag("circle")
         alllines = self.secondcanvas.find_withtag('line')
 
-        for i in allvertex:
-            currentvertextag = self.secondcanvas.gettags(i)
-            vertexholder = Vertex()
-            vertexholder.SetTag(currentvertextag)
-            vertexholder.SetIdx(currentvertextag[0][1:])
-            self.myobject.PushMyVertex(vertexholder)
+        ### 2 for dibawah gae opo ? ###
 
-        for i in alllines:
-            currentlinetag = self.secondcanvas.gettags(i)
-            lineholder = Line()
-            lineholder.SetTag(currentlinetag)
-            lineholder.SetVAll((currentlinetag[1][3:],currentlinetag[3][3:]))
-            self.myobject.PushMyLine(lineholder)
-            self.lines.append(currentlinetag)
+        # for i in allvertex:
+        #     currentvertextag = self.secondcanvas.gettags(i)
+        #     vertexholder = Vertex()
+        #     vertexholder.SetTag(currentvertextag)
+        #     vertexholder.SetIdx(currentvertextag[0][1:])
+        #     self.myobject.PushMyVertex(vertexholder)
+
+        # for i in alllines:
+        #     currentlinetag = self.secondcanvas.gettags(i)
+        #     lineholder = Line()
+        #     lineholder.SetTag(currentlinetag)
+        #     lineholder.SetVAll((currentlinetag[1][3:],currentlinetag[3][3:]))
+        #     self.myobject.PushMyLine(lineholder)
+        #     self.lines.append(currentlinetag)
+        self.lines = list(alllines)
 
         self.secondcanvas.itemconfigure('line',state='hidden')
         self.showline()
