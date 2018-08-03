@@ -8,11 +8,34 @@ from line import Line
 from vertex import Vertex
 from myobject import MyObject
 
+
 class Gui(ttk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.pack()
         self.create_widgets()
+
+    def popWindow(self,labeltext="Isi berat/jarak (integer):"):
+        top=self.top=tk.Toplevel(self, padx=30 , pady=10, width=2000)
+        self.top.resizable(0,0)
+        self.poplabel=ttk.Label(top,text=labeltext)
+        self.poplabel.pack()
+        self.popentry=ttk.Entry(top)
+        self.popentry.pack()
+        self.popbutton=ttk.Button(top,text="Ok",command=lambda:self.cleansubmit(labeltext))
+        self.popbutton.pack()
+
+    def cleansubmit(self,text):
+        try:
+            value=int(self.popentry.get())
+            #print(self.popvalue)
+            self.top.destroy()
+            self.popvalue=value
+        except ValueError:
+            self.top.destroy()
+            messagebox.showwarning("Error Occured", "Masukkan integer, jangan yang lain!")
+            self.popWindow(labeltext=text)
+            self.wait_window(self.top)
 
     def create_widgets(self):
         self.vertexNum = 1
@@ -21,7 +44,7 @@ class Gui(ttk.Frame):
         self.currentvertex = False
         self.myobject = MyObject()
         self.lines=[]
-
+        self.popvalue=-1
 
         self.mainframe = ttk.Frame(self, padding="3 3 12 12")
         self.mainframe.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
@@ -143,6 +166,12 @@ class Gui(ttk.Frame):
                             
                 if counter==1:
                     self.log('berhasil')
+                    self.popWindow()
+                    self.wait_window(self.top)
+                    self.secondcanvas.addtag_withtag(str(self.popvalue),'ln'+str(self.lineNum)) #beratnya = popvalue
+                    #Add label for berat here
+                    #here
+                    #here
                     self.lineNum +=1
                 self.log('jumlah line '+str(self.lineNum-1))
             else:
@@ -247,43 +276,72 @@ class Gui(ttk.Frame):
 
     
     def run(self, *args):
+        
         comboval = self.getComboVal()
-        del self.myobject
-        self.myobject=MyObject()
+        self.myobject.DelMyVertexAll()
+        self.myobject.DelMyLineAll()
+        self.myobject.DelMyMstAll()
         allvertex = self.secondcanvas.find_withtag("circle")
         alllines = self.secondcanvas.find_withtag('line')
 
         ### 2 for dibawah gae opo ? ###
+        # Buat komputasi, kan butuh data line nya terhubung vertex apa aja
+        # beratnya berapa
+        # object vertex ga terlalu berguna kalau ndak ada fitur random jumlah vertex & line
 
-        # for i in allvertex:
-        #     currentvertextag = self.secondcanvas.gettags(i)
-        #     vertexholder = Vertex()
-        #     vertexholder.SetTag(currentvertextag)
-        #     vertexholder.SetIdx(currentvertextag[0][1:])
-        #     self.myobject.PushMyVertex(vertexholder)
+        for i in allvertex:
+            currentvertextag = self.secondcanvas.gettags(i)
+            vertexholder = Vertex()
+            vertexholder.SetTag(currentvertextag)
+            vertexholder.SetIdx(currentvertextag[0][1:])
+            self.myobject.PushMyVertex(vertexholder)
 
-        # for i in alllines:
-        #     currentlinetag = self.secondcanvas.gettags(i)
-        #     lineholder = Line()
-        #     lineholder.SetTag(currentlinetag)
-        #     lineholder.SetVAll((currentlinetag[1][3:],currentlinetag[3][3:]))
-        #     self.myobject.PushMyLine(lineholder)
-        #     self.lines.append(currentlinetag)
-        self.lines = list(alllines)
+        if(self.myobject.GetMyVertexSize()==0):
+            messagebox.showwarning("Error occured!","Tidak ada vertex!")
+
+        for i in alllines:
+            currentlinetag = self.secondcanvas.gettags(i)
+            lineholder = Line()
+            lineholder.SetWeight(int(currentlinetag[4]))
+            lineholder.SetTag(currentlinetag)
+            lineholder.SetVAll((int(currentlinetag[1][3:]),int(currentlinetag[3][3:])))
+            self.myobject.PushMyLine(lineholder)
+        
+        if(self.myobject.GetMyLineSize()==0):
+            return #kalau gak ada line nya ndak ada yg harus di-compute
 
         self.secondcanvas.itemconfigure('line',state='hidden')
-        self.showline()
+        # self.showline()
 
         if comboval == 'Djikstra':
             self.log('Djikstra Run !')
+            self.popWindow(labeltext="Masukkan titik keberangkatan vertex :")
+            self.wait_window(self.top) #self.top -> variable yg menyimpan object popwindow / dialog
+            start=self.popvalue #popvalue itu yang nyimpan valuenya
+            self.popWindow(labeltext="Masukkan titik tujuan vertex :")
+            self.wait_window(self.top)
+            end=self.popvalue
+            print(start)
+            print(end)
+            self.myobject.Compute('Djikstra',val1=start,val2=end)
         elif comboval == 'Prims':
             self.log('Prims Run !')
+            self.myobject.Compute('Prims',val1=1,val2=self.vertexNum)
         elif comboval == 'Kruskal':
             self.log('Kruskal Run !')
+            self.myobject.Compute('Kruskal',val1=self.vertexNum)
         elif comboval == 'Coloring':
             self.log('Coloring Run !')
         elif comboval == 'Fuery':
             self.log('Fuery Run !')
+        
+        #masukin hasil komputasi ke queue line yg akan ditampilkan
+        for i in range(0,self.myobject.GetMyMstSize()):
+            holder=self.myobject.GetMyMstAt(i)
+            print(holder.GetTag())
+            linetag=holder.GetTag()
+            self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
+        self.showline()
 
     def addMode(self,*args):
         self.mode = 'add'

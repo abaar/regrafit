@@ -64,7 +64,7 @@ class MyObject:
 			# 1. Sort it based on its weight
 			# 2. Push from the smallest to the highest with no cyclic
 			self.DelMyMstAll()
-			cyclicchecker=Graph(len(self.__myvertex))
+			cyclicchecker=Graph(val1)
 			for i in range(0,len(self.__myline)):
 				index = i 
 				temp = self.__myline[i].GetWeight()
@@ -84,6 +84,7 @@ class MyObject:
 					cyclicchecker.deleteEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
 				else:
 					self.__mymst.append(self.__myline[i])
+			#print(self.__mymst)
 			del cyclicchecker
 		elif (algorithm=="Djikstra"):
 			self.DelMyMstAll()
@@ -92,28 +93,29 @@ class MyObject:
 			predecessor=[]
 			visited=[]
 			route=[]
-			for x in range(0,len(self.__myvertex)):
+			for x in range(-1,len(self.__myvertex)):
 				dist.append(self.__intmax)
 				visited.append(False)
 				predecessor.append(-1)
 				route.append([])
+
 			dist[val1]=0
 			predecessor[val1]=val1
 			predec=val1
 
-			for i in range(0,len(self.__myvertex)):
+			for i in range(1,len(self.__myvertex)+1):
 				
 				#find minimum dist of current spt
 				hold=self.__intmax
 				u=0
-				for j in range(0,len(self.__myvertex)):
+				for j in range(1,len(self.__myvertex)+1):
 					if (visited[j]==False and hold>dist[j]):
 						hold=dist[j]
 						u=j
 
 				# predecessor[u]=predec
 
-				if (i==0):
+				if (i==1):
 					route[val1].append(val1)
 				else:
 					idx=predecessor[u]
@@ -141,7 +143,23 @@ class MyObject:
 							predecessor[v]=u
 
 				predec=u
-			print(route[val2])
+			#print(route[val2]) sudah bener
+
+			for i in range(0,len(route[val2])):
+				holder=route[val2][i]
+				expectednext=-1
+				if(i+1<len(route[val2])):
+					expectednext=route[val2][i+1]
+				for j in range(0,len(self.__myline)):
+					if(self.__myline[j].GetVend()==holder):
+						if(self.__myline[j].GetVstart()==expectednext):
+							self.__mymst.append(self.__myline[j])
+					if(self.__myline[j].GetVstart()==holder):
+						if(self.__myline[j].GetVend()==expectednext):
+							self.__mymst.append(self.__myline[j])
+			
+			#print(self.__mymst[0].GetTag()) sudah bener
+
 
 
 		elif(algorithm=="Prims"):
@@ -149,7 +167,7 @@ class MyObject:
 			visited=[]
 			mylist=[]
 			mylist_cyclic=[]
-			for i in range (0,len(self.__myvertex)):
+			for i in range (0,len(self.__myvertex)+1):
 				visited.append(False)
 
 			visited[val1]=True
@@ -158,7 +176,7 @@ class MyObject:
 				if (self.__myline[i].GetVstart()==val1 or self.__myline[i].GetVend()==val1):
 					mylist.append(i)
 					# i-th line with 0 means not yet taken
-			cyclicchecker=Graph(len(self.__myvertex))
+			cyclicchecker=Graph(val2)
 
 			while(len(mylist)!=0):
 				smallest=self.__intmax
