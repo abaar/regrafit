@@ -17,6 +17,7 @@ class Gui(ttk.Frame):
 
     def popWindow(self,labeltext="Isi berat/jarak (integer):"):
         top=self.top=tk.Toplevel(self, padx=30 , pady=10, width=2000)
+        self.popvalue = 1 # default value aja
         self.top.resizable(0,0)
         self.poplabel=ttk.Label(top,text=labeltext)
         self.poplabel.pack()
@@ -45,6 +46,7 @@ class Gui(ttk.Frame):
         self.myobject = MyObject()
         self.lines=[]
         self.popvalue=-1
+        self.isRun = False
 
         self.mainframe = ttk.Frame(self, padding="3 3 12 12")
         self.mainframe.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
@@ -69,6 +71,11 @@ class Gui(ttk.Frame):
         self.btnRun = ttk.Button(self.toolbar, text="Run")
         self.btnRun.grid(column=4, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
         self.btnRun.bind("<Button-1>", self.run)
+
+        self.btnStop = ttk.Button(self.toolbar, text="Stop",state='disabled')
+        self.btnStop.grid(column=5, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
+        self.btnStop.bind("<Button-1>", self.stop)
+
 
         self.dropval = tk.StringVar()
         self.dropdown = ttk.Combobox(self.toolbar, textvariable=self.dropval, state='readonly')
@@ -103,7 +110,7 @@ class Gui(ttk.Frame):
     def cLeft(self,event):
         x, y = event.x, event.y
         cekmode = self.mode
-        self.log(cekmode)
+        # self.log(cekmode)
         if cekmode == 'add':
             self.selVertex(x,y)
             self.drawVertex(x,y)
@@ -266,17 +273,22 @@ class Gui(ttk.Frame):
 
 
     def showline(self):
-        try:
-            nextline=self.lines.pop(0)
-            self.log(nextline)
-            self.secondcanvas.itemconfigure(nextline,state='normal')
-            self.secondcanvas.after(1000,self.showline)
-        except IndexError:
-            pass
+        if self.isRun:
+            try:
+                nextline=self.lines.pop(0)
+                self.log(nextline)
+                self.secondcanvas.itemconfigure(nextline,state='normal',fill='green')
+                self.secondcanvas.after(1000,self.showline)
+            except IndexError:
+                pass
+        
 
     
     def run(self, *args):
-        
+        self.mode = 'run'
+        self.isRun = True
+        self.btnRun.configure(state='disabled')
+        self.btnStop.configure(state='normal')
         comboval = self.getComboVal()
         self.myobject.DelMyVertexAll()
         self.myobject.DelMyLineAll()
@@ -310,9 +322,6 @@ class Gui(ttk.Frame):
         if(self.myobject.GetMyLineSize()==0):
             return #kalau gak ada line nya ndak ada yg harus di-compute
 
-        self.secondcanvas.itemconfigure('line',state='hidden')
-        # self.showline()
-
         if comboval == 'Djikstra':
             self.log('Djikstra Run !')
             self.popWindow(labeltext="Masukkan titik keberangkatan vertex :")
@@ -323,6 +332,7 @@ class Gui(ttk.Frame):
             end=self.popvalue
             print(start)
             print(end)
+            self.secondcanvas.itemconfigure('line',state='hidden')
             self.myobject.Compute('Djikstra',val1=start,val2=end)
         elif comboval == 'Prims':
             self.log('Prims Run !')
@@ -342,6 +352,13 @@ class Gui(ttk.Frame):
             linetag=holder.GetTag()
             self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
         self.showline()
+
+    def stop(self,*args):
+        self.isRun = False
+        self.secondcanvas.itemconfigure('line',state='normal',fill='blue')
+        self.btnRun.configure(state='normal')
+        self.btnStop.configure(state='disabled')
+        self.mode = 'add'
 
     def addMode(self,*args):
         self.mode = 'add'
