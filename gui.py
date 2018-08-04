@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import scrolledtext as tkst
-from draggable import Draggable
 import math
 from line import Line
 from vertex import Vertex
@@ -38,6 +37,7 @@ class Gui(ttk.Frame):
             self.popWindow(labeltext=text)
             self.wait_window(self.top)
 
+    # untuk buat tampilan-tampilannnya
     def create_widgets(self):
         self.vertexNum = 1
         self.lineNum = 1
@@ -46,7 +46,6 @@ class Gui(ttk.Frame):
         self.myobject = MyObject()
         self.lines=[]
         self.popvalue=-1
-        self.isRun = False
 
         self.mainframe = ttk.Frame(self, padding="3 3 12 12")
         self.mainframe.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
@@ -125,8 +124,10 @@ class Gui(ttk.Frame):
             if vtag != False:
                 label = self.secondcanvas.find_withtag(vtag)[1]
                 xline, yline = self.secondcanvas.coords(label)
+                # jika udah dibuat linenya tinggal di configure coor nya
                 if self.secondcanvas.find_withtag('ln'+str(self.lineNum)):
                     self.secondcanvas.coords('ln'+str(self.lineNum),xline,yline, x, y)
+                # klo belum di buat linenya ya dibuat
                 else:
                     self.secondcanvas.create_line((xline,yline, x, y), fill='blue', width=3, tags=('ln'+str(self.lineNum),'lo'+vtag,'line'))
                     
@@ -137,31 +138,47 @@ class Gui(ttk.Frame):
                 v = self.secondcanvas.find_withtag(vtag)
                 li = self.secondcanvas.find_withtag('li'+vtag)
                 lo = self.secondcanvas.find_withtag('lo'+vtag)
+                
                 self.secondcanvas.coords(v[0],x+r, y+r, x-r,y-r)
                 self.secondcanvas.coords(v[1],x, y)
                 for i in lo:
                     linecoord = self.secondcanvas.coords(i)
                     self.secondcanvas.coords(i,x,y,linecoord[2],linecoord[3])
+                    #configure line label
+                    xLineLabel = (x+linecoord[2])/2
+                    yLineLabel = (y+linecoord[3])/2
+                    # i + 1 karena pasti habis line ada label linenya
+                    self.secondcanvas.coords(i+1,xLineLabel,yLineLabel)
                 for i in li:
                     linecoord = self.secondcanvas.coords(i)
                     self.secondcanvas.coords(i,linecoord[0],linecoord[1],x,y)
-                
+                    #configure line label                    
+                    xLineLabel = (x+linecoord[0])/2
+                    yLineLabel = (y+linecoord[1])/2
+                    self.secondcanvas.coords(i+1,xLineLabel,yLineLabel)
+
 
     def cLeftRelease(self, event):
         cekmode = self.mode
+        curvtex = self.currentvertex # isinya tag vertex awal
         if cekmode == 'add':
-            vtag = self.isIntersect(event.x,event.y)
-            curvtex= self.currentvertex
-            cekline = self.secondcanvas.find_withtag('ln'+str(self.lineNum))
+            vtag = self.isIntersect(event.x,event.y) #isinya tag vertex tujuan
+            #cek line yg sudah terbuat dari cLeftMotion masih adakah ?
+            cekline = self.secondcanvas.find_withtag('ln'+str(self.lineNum)) 
            
+           #jika vertex tujuan != false dan vertex tujuan !=vertex awal dan line hasil cLM sudah terbuat
             if vtag != False and vtag != curvtex and cekline:
+                #simpan coor vertex tujuan
                 label = self.secondcanvas.find_withtag(vtag)[1]
                 self.log(self.secondcanvas.coords(label))
                 xver, yver = self.secondcanvas.coords(label)
 
+                #configure line agar line endpoint = coor vertex tujuan
                 linecoord = self.secondcanvas.coords('ln'+str(self.lineNum))
                 self.secondcanvas.coords('ln'+str(self.lineNum),linecoord[0],linecoord[1],xver,yver)
                 self.secondcanvas.addtag_withtag('li'+vtag,'ln'+str(self.lineNum))
+
+                #cek apakah sudah ada line yg terbentuk sebelumnya
                 counter = 0
                 for i in self.secondcanvas.find_withtag('line'):
                     linetag = self.secondcanvas.gettags(i)
@@ -176,18 +193,22 @@ class Gui(ttk.Frame):
                     self.popWindow()
                     self.wait_window(self.top)
                     self.secondcanvas.addtag_withtag(str(self.popvalue),'ln'+str(self.lineNum)) #beratnya = popvalue
+                    
                     #Add label for berat here
-                    #here
-                    #here
+                    xLineLabel = (linecoord[0]+linecoord[2])/2
+                    yLineLabel = (linecoord[1]+linecoord[3])/2
+                    self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(self.popvalue), tags=('lb'+str(self.lineNum),'label','lbo'+str(curvtex),'lbi'+str(vtag)))
+
                     self.lineNum +=1
                 self.log('jumlah line '+str(self.lineNum-1))
+            # selain if diatas => gagal dan delete line yg dibuat
             else:
                 self.secondcanvas.delete('ln'+str(self.lineNum))
                 self.log('gagal')
 
-        vtag  = self.currentvertex
-        if vtag != False:
-            v = self.secondcanvas.find_withtag(vtag)
+        # untuk mengembalikan warna outline vertex setelah di select
+        if curvtex != False:
+            v = self.secondcanvas.find_withtag(curvtex)
             self.secondcanvas.itemconfigure(v[0],outline = '#0097A7')
 
     
@@ -223,14 +244,17 @@ class Gui(ttk.Frame):
             self.secondcanvas.delete(vtag)
             self.secondcanvas.delete('li'+vtag)
             self.secondcanvas.delete('lo'+vtag)
-            self.lineNum-=1
+            self.secondcanvas.delete('lbi'+vtag)
+            self.secondcanvas.delete('lbo'+vtag)
+            self.lineNum = len(self.secondcanvas.find_withtag('line'))
         
     def delLine(self,x,y,linetag):
         if linetag != False:
             self.log('line '+str(linetag)+' deleted')
+            self.secondcanvas.delete(self.secondcanvas.find_withtag(linetag)[0]+1)
             self.secondcanvas.delete(linetag)
-            self.secondcanvas.dtag('vl'+linetag,)
-            self.secondcanvas.dtag('vl'+linetag)
+            self.lineNum-=1
+
 
     def isIntersect(self, x, y,obj='circle'):
         allver = self.secondcanvas.find_withtag(obj)
@@ -273,7 +297,7 @@ class Gui(ttk.Frame):
 
 
     def showline(self):
-        if self.isRun:
+        if self.mode == 'run':
             try:
                 nextline=self.lines.pop(0)
                 self.log(nextline)
@@ -286,7 +310,6 @@ class Gui(ttk.Frame):
     
     def run(self, *args):
         self.mode = 'run'
-        self.isRun = True
         self.btnRun.configure(state='disabled')
         self.btnStop.configure(state='normal')
         comboval = self.getComboVal()
@@ -354,7 +377,6 @@ class Gui(ttk.Frame):
         self.showline()
 
     def stop(self,*args):
-        self.isRun = False
         self.secondcanvas.itemconfigure('line',state='normal',fill='blue')
         self.btnRun.configure(state='normal')
         self.btnStop.configure(state='disabled')
