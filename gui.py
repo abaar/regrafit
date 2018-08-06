@@ -45,6 +45,7 @@ class Gui(ttk.Frame):
         self.currentvertex = False
         self.myobject = MyObject()
         self.lines=[]
+        self.vertice=[]
         self.popvalue=-1
 
         self.mainframe = ttk.Frame(self, padding="3 3 12 12")
@@ -305,12 +306,52 @@ class Gui(ttk.Frame):
                 self.secondcanvas.after(1000,self.showline)
             except IndexError:
                 pass
-        
+    
+    def showvertex(self):
+        if self.mode=='run':
+            try:
+                nextvertex=self.lines.pop(0)
+                nextcolor=self.vertice.pop(0)
+                warna=0
+                if(nextcolor[1]==0):
+                    #red
+                    warna='red'
+                elif(nextcolor[1]==1):
+                    #green
+                    warna='green'
+                elif(nextcolor[1]==2):
+                    #blue
+                    warna='#0400FF'
+                elif(nextcolor[1]==3):
+                    #yellow
+                    warna='#FFFF00'
+                elif(nextcolor[1]==4):
+                    #purple
+                    warna='#9D00FF'
+                elif(nextcolor[1]==5):
+                    #orange
+                    warna='#FF7F00'
+                elif(nextcolor[1]==6):
+                    #silver
+                    warna='#C1C1C1'
+                elif(nextcolor[1]==7):
+                    #white
+                    warna='#FFFFFF'
+                elif(nextcolor[1]==8):
+                    #black
+                    warna='#000000'
+                self.secondcanvas.itemconfigure(nextvertex,fill=warna,outline=warna)
+                self.secondcanvas.after(1000,self.showvertex)
+            except IndexError:
+                pass
 
     
     def run(self, *args):
         self.mode = 'run'
         self.btnRun.configure(state='disabled')
+        self.btnAdd.configure(state='disabled')
+        self.btnEdit.configure(state='disabled')
+        self.btnClear.configure(state='disabled')
         self.btnStop.configure(state='normal')
         comboval = self.getComboVal()
         self.myobject.DelMyVertexAll()
@@ -323,16 +364,16 @@ class Gui(ttk.Frame):
         # Buat komputasi, kan butuh data line nya terhubung vertex apa aja
         # beratnya berapa
         # object vertex ga terlalu berguna kalau ndak ada fitur random jumlah vertex & line
-
         for i in allvertex:
             currentvertextag = self.secondcanvas.gettags(i)
             vertexholder = Vertex()
             vertexholder.SetTag(currentvertextag)
-            vertexholder.SetIdx(currentvertextag[0][1:])
+            vertexholder.SetIdx(int(currentvertextag[0][1:]))
             self.myobject.PushMyVertex(vertexholder)
 
         if(self.myobject.GetMyVertexSize()==0):
             messagebox.showwarning("Error occured!","Tidak ada vertex!")
+            return
 
         for i in alllines:
             currentlinetag = self.secondcanvas.gettags(i)
@@ -342,9 +383,8 @@ class Gui(ttk.Frame):
             lineholder.SetVAll((int(currentlinetag[1][3:]),int(currentlinetag[3][3:])))
             self.myobject.PushMyLine(lineholder)
         
-        if(self.myobject.GetMyLineSize()==0):
-            return #kalau gak ada line nya ndak ada yg harus di-compute
 
+        note=1
         if comboval == 'Djikstra':
             self.log('Djikstra Run !')
             self.popWindow(labeltext="Masukkan titik keberangkatan vertex :")
@@ -353,32 +393,57 @@ class Gui(ttk.Frame):
             self.popWindow(labeltext="Masukkan titik tujuan vertex :")
             self.wait_window(self.top)
             end=self.popvalue
-            print(start)
-            print(end)
+            if(self.myobject.GetMyLineSize()==0):
+                return #kalau gak ada line nya ndak ada yg harus di-compute
             self.secondcanvas.itemconfigure('line',state='hidden')
             self.myobject.Compute('Djikstra',val1=start,val2=end)
         elif comboval == 'Prims':
             self.log('Prims Run !')
+            if(self.myobject.GetMyLineSize()==0):
+                return #kalau gak ada line nya ndak ada yg harus di-compute
             self.myobject.Compute('Prims',val1=1,val2=self.vertexNum)
         elif comboval == 'Kruskal':
             self.log('Kruskal Run !')
+            if(self.myobject.GetMyLineSize()==0):
+                return #kalau gak ada line nya ndak ada yg harus di-compute
             self.myobject.Compute('Kruskal',val1=self.vertexNum)
         elif comboval == 'Coloring':
             self.log('Coloring Run !')
+            colored=self.myobject.Compute('GColor',val1=self.vertexNum)
+            note=2
         elif comboval == 'Fuery':
+            if(self.myobject.Compute('Feury',val1=self.vertexNum)==False):
+                note=0
             self.log('Fuery Run !')
         
         #masukin hasil komputasi ke queue line yg akan ditampilkan
-        for i in range(0,self.myobject.GetMyMstSize()):
-            holder=self.myobject.GetMyMstAt(i)
-            print(holder.GetTag())
-            linetag=holder.GetTag()
-            self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
-        self.showline()
+        if(note==1):
+            for i in range(0,self.myobject.GetMyMstSize()):
+                holder=self.myobject.GetMyMstAt(i)
+                print(holder.GetTag())
+                linetag=holder.GetTag()
+                self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
+            self.showline()
+        elif(note==2):
+            for i in range(0,self.myobject.GetMyVertexSize()):
+                holder=self.myobject.GetMyVertexAt(i)
+                #reuse line untuk menyimpan objek vertex
+                #simpan warnanya di vertice
+                vtag=holder.GetTag()
+                # print(vtag)
+                vholder=self.secondcanvas.find_withtag(vtag[0])
+                self.lines.append(vholder[0])
+                self.vertice.append(colored[holder.GetIdx()])
+            self.showvertex()
+        elif(note==0):
+            self.log("Graf yang diberikan bukan 'Eulerian Graph' karena memiliki lebih dari 2 vertex yang berderajat ganjil.")
 
     def stop(self,*args):
         self.secondcanvas.itemconfigure('line',state='normal',fill='blue')
         self.btnRun.configure(state='normal')
+        self.btnAdd.configure(state='normal')
+        self.btnEdit.configure(state='normal')
+        self.btnClear.configure(state='normal')
         self.btnStop.configure(state='disabled')
         self.mode = 'add'
 

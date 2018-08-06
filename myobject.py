@@ -59,6 +59,7 @@ class MyObject:
 		return len(self.__mymst)
 	
 	def Compute(self,algorithm,val1=0,val2=0):
+		# print(algorithm)
 		if(algorithm=="Kruskal"):
 			#Creating MST using Kruskal, steps :
 			# 1. Sort it based on its weight
@@ -216,11 +217,95 @@ class MyObject:
 					visited[target]=True
 					del mylist[idx]
 			del cyclicchecker
+		elif (algorithm=="Feury"):
+			self.DelMyMstAll()
+			graph=Graph(val1)
+
+			for i in range(0,len(self.__myline)):
+				graph.addEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
+
+			EulerType=graph.isEulerian()
+			if(EulerType!=0):
+				holder=graph.StartComputeFeury()
+				print(holder)
+				for i in range(0,len(holder)):
+					for j in range(0,len(self.__myline)):
+						if(holder[i][0]==self.__myline[j].GetVstart() and holder[i][1]==self.__myline[j].GetVend()):
+							self.__mymst.append(self.__myline[j])
+						elif(holder[i][0]==self.__myline[j].GetVend() and holder[i][1]==self.__myline[j].GetVstart()):
+							self.__mymst.append(self.__myline[j])
+				return True
+			else:
+				return False
+
+		elif(algorithm=='GColor'):
+			self.DelMyMstAll()
+			availcolor=list()
+			colored=list()
+			#jadi ideku, setiap vertex punya possibility warna
+			#nah ketika suatu vertex 'telah memilih' warna maka
+			#warna tersebut dihilangkan dari list possibility di tetangganya
+			for i in range(0,val1+1):
+				availcolor.append([])
+				colored.append((False,0))
+				for j in range(0,len(self.__myvertex)):
+					availcolor[i].append(True) #append possibility warna (logikanya kalau ada X vertex, worst ada X warna)
+					#index sebagai warna, data (boolean) tanda bisa dipakai ndak
+
+
+			#255-268 pilih warna yang pertama & disable sebelah2nya
+			for i in range(1,len(self.__myvertex)):
+				availcolor[self.__myvertex[0].GetIdx()][i]=False
+
+			currentvertex=self.__myvertex[0].GetIdx()
+			colored[currentvertex]=(True,0)
+			nextvertex=list()
+			for i in range(0,len(self.__myline)):
+				if(currentvertex==self.__myline[i].GetVstart()):
+					disablecolor=colored[currentvertex][1]
+					availcolor[self.__myline[i].GetVend()][disablecolor]=False
+					nextvertex.append(self.__myline[i].GetVend())
+				elif(currentvertex==self.__myline[i].GetVend()):
+					disablecolor=colored[currentvertex][1]
+					availcolor[self.__myline[i].GetVstart()][disablecolor]=False
+					nextvertex.append(self.__myline[i].GetVstart())
+			while(len(nextvertex)!=0):
+				now=nextvertex.pop(0)
+				clr=0
+				seek=True
+				for i in range(0,len(self.__myvertex)):
+					if(seek and availcolor[now][i]):
+						clr=i
+						seek=False
+					elif(seek and i==len(self.__myvertex)-1):
+						clr=-1
+						#ndak ada yg bisa dijadikan warna
+					elif(not seek):
+						availcolor[now][i]=False
+						#ketemu matikan yang lain
+				if(clr!=-1):
+					colored[now]=(True,clr)
+					for i in range(0,len(self.__myline)):
+						if(now==self.__myline[i].GetVstart() and not colored[self.__myline[i].GetVend()][0]):
+							disablecolor=colored[now][1]
+							availcolor[self.__myline[i].GetVend()][disablecolor]=False
+							nextvertex.append(self.__myline[i].GetVend())
+						elif(now==self.__myline[i].GetVend() and not colored[self.__myline[i].GetVstart()][0]):
+							disablecolor=colored[now][1]
+							availcolor[self.__myline[i].GetVstart()][disablecolor]=False
+							nextvertex.append(self.__myline[i].GetVstart())
+
+			#pada baris ini, ketika dijalankan colored yg bernilai False yg memiliki idx sesuai index vertex
+			#pasti memiliki warna 0
+			return colored
+
+
+
+
+
+
+
 		# elif (algorithm=="coloring"):
-			
-		# for i in range(0,len(self.__mymst)):
-		# 	print(str(self.__mymst[i].GetVstart()) + " " + str(self.__mymst[i].GetVend()))
-		
 
 		#end of conditional algorithm
 	#end of compute method
