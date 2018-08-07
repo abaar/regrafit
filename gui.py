@@ -14,23 +14,26 @@ class Gui(ttk.Frame):
         self.pack()
         self.create_widgets()
 
-    def popWindow(self,labeltext="Isi berat/jarak (integer):"):
+    def popWindow(self,labeltext="Isi berat/jarak (integer):",popvalue = 1,nextmode='run'):
         top=self.top=tk.Toplevel(self, padx=30 , pady=10, width=2000)
-        self.popvalue = 1 # default value aja
+        self.mode = 'popWindow'
+        self.popvalue = popvalue # default value aja
         self.top.resizable(0,0)
         self.poplabel=ttk.Label(top,text=labeltext)
         self.poplabel.pack()
         self.popentry=ttk.Entry(top)
+        self.popentry.insert(tk.END,str(popvalue))
         self.popentry.pack()
-        self.popbutton=ttk.Button(top,text="Ok",command=lambda:self.cleansubmit(labeltext))
+        self.popbutton=ttk.Button(top,text="Ok",command=lambda:self.cleansubmit(labeltext,nextmode))
         self.popbutton.pack()
 
-    def cleansubmit(self,text):
+    def cleansubmit(self,text,nextmode):
         try:
             value=int(self.popentry.get())
             #print(self.popvalue)
             self.top.destroy()
             self.popvalue=value
+            self.mode = nextmode
         except ValueError:
             self.top.destroy()
             messagebox.showwarning("Error Occured", "Masukkan integer, jangan yang lain!")
@@ -76,7 +79,6 @@ class Gui(ttk.Frame):
         self.btnStop.grid(column=5, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
         self.btnStop.bind("<Button-1>", self.stop)
 
-
         self.dropval = tk.StringVar()
         self.dropdown = ttk.Combobox(self.toolbar, textvariable=self.dropval, state='readonly')
         self.dropdown['values'] = ("Djikstra", "Prims", "Kruskal", "Coloring", "Fuery")
@@ -96,7 +98,10 @@ class Gui(ttk.Frame):
         self.secondcanvas.bind("<Button-3>", self.cRight)
         self.secondcanvas.bind("<B1-Motion>", self.cLeftMotion)
         self.secondcanvas.bind("<B1-ButtonRelease>", self.cLeftRelease)
+        self.secondcanvas.bind("<Double-Button-1>", self.cLeftDouble)
 
+
+    #Fungsi untuk menampilkan log di scrolltext
     def log(self, msg, clear=False):
         msg = str(msg)
         self.scrolltext.config(state=tk.NORMAL)
@@ -107,6 +112,7 @@ class Gui(ttk.Frame):
         self.scrolltext.see("end")
         self.scrolltext.config(state=tk.DISABLED)
 
+    # Fungsi yang dijalankan ketika user klik kiri mouse
     def cLeft(self,event):
         x, y = event.x, event.y
         cekmode = self.mode
@@ -116,7 +122,8 @@ class Gui(ttk.Frame):
             self.drawVertex(x,y)
         elif cekmode == 'edit':
             self.selVertex(x,y)
-    
+
+    # Fungsi yang dijalankan ketika user menggerakkan klik kiri mouse
     def cLeftMotion(self, event):
         cekmode = self.mode
         x, y = self.secondcanvas.canvasx(event.x), self.secondcanvas.canvasy(event.y)
@@ -130,7 +137,9 @@ class Gui(ttk.Frame):
                     self.secondcanvas.coords('ln'+str(self.lineNum),xline,yline, x, y)
                 # klo belum di buat linenya ya dibuat
                 else:
-                    self.secondcanvas.create_line((xline,yline, x, y), fill='blue', width=3, tags=('ln'+str(self.lineNum),'lo'+vtag,'line'))
+                    line = self.secondcanvas.create_line((xline,yline, x, y), fill='blue', width=3, tags=('ln'+str(self.lineNum),'lo'+vtag,'line'))
+                    # line ditaruh paling bawah
+                    self.secondcanvas.tag_lower(line)
                     
         elif cekmode == 'edit':
             r = 20
@@ -159,6 +168,7 @@ class Gui(ttk.Frame):
                     self.secondcanvas.coords(i+1,xLineLabel,yLineLabel)
 
 
+    # Fungsi yang dijalankan ketika user melepas klik kiri mouse
     def cLeftRelease(self, event):
         cekmode = self.mode
         curvtex = self.currentvertex # isinya tag vertex awal
@@ -187,32 +197,52 @@ class Gui(ttk.Frame):
                         counter+=1
                         if counter>1:
                             self.secondcanvas.delete('ln'+str(self.lineNum))
-                            self.log('gabisa lagii')
-                            
+                            self.log('Gagal, kedua vertex sudah terhubung')
+
+                #jika line hasil cLeftMotion saja yg terdeteksi
                 if counter==1:
-                    self.log('berhasil')
-                    self.popWindow()
+                    self.log('Berhasil membuat Line')
+                    self.log('di '+str(linecoord))
+                    self.popWindow(nextmode='add')
                     self.wait_window(self.top)
                     self.secondcanvas.addtag_withtag(str(self.popvalue),'ln'+str(self.lineNum)) #beratnya = popvalue
                     
                     #Add label for berat here
                     xLineLabel = (linecoord[0]+linecoord[2])/2
                     yLineLabel = (linecoord[1]+linecoord[3])/2
-                    self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(self.popvalue), tags=('lb'+str(self.lineNum),'label','lbo'+str(curvtex),'lbi'+str(vtag)))
-
+                    self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(self.popvalue), font=(200), tags=('lb'+str(self.lineNum),'label','lbo'+str(curvtex),'lbi'+str(vtag)))
                     self.lineNum +=1
-                self.log('jumlah line '+str(self.lineNum-1))
+
+                self.log('Jumlah line : '+str(self.lineNum-1))
+
             # selain if diatas => gagal dan delete line yg dibuat
             else:
                 self.secondcanvas.delete('ln'+str(self.lineNum))
-                self.log('gagal')
+                self.log('Gagal membuat line')
 
         # untuk mengembalikan warna outline vertex setelah di select
         if curvtex != False:
             v = self.secondcanvas.find_withtag(curvtex)
             self.secondcanvas.itemconfigure(v[0],outline = '#0097A7')
 
-    
+    def cLeftDouble(self,event):
+        x, y = event.x, event.y
+        isLine = self.isIntersect(x,y,'line')
+        if isLine:
+            lineId = self.secondcanvas.find_withtag(isLine)
+            lineTag = self.secondcanvas.gettags(isLine)
+            lineWeight = lineTag[4]
+            self.secondcanvas.dtag(lineId,lineWeight)
+            self.popWindow(popvalue=lineWeight,nextmode='edit')
+            self.wait_window(self.top)
+            self.secondcanvas.addtag_withtag(self.popvalue,lineId)
+            lineTag = self.secondcanvas.gettags(isLine)
+            self.log('after lagi lagi :'+str(lineTag))
+            self.secondcanvas.itemconfigure(lineId[0]+1,text=str(self.popvalue))
+            
+
+
+    # Fungsi yang dijalankan ketika user klik kanan mouse
     def cRight(self, event):
         x, y = event.x, event.y
         isLine = self.isIntersect(x,y,'line')
@@ -221,16 +251,18 @@ class Gui(ttk.Frame):
         else:    
             self.delVertex(x,y)
 
+    # Fungsi untuk draw vertex
     def drawVertex(self, x, y):
         if self.isIntersect(x,y) == False:
             r = 20
             self.secondcanvas.create_oval(x+r, y+r, x-r,y-r,fill="#00BCD4", outline="#0097A7", width=2, tags=('v'+str(self.vertexNum),'circle','vertex'))
-            self.secondcanvas.create_text(x,y,text=str(self.vertexNum), tags=('v'+str(self.vertexNum),'label','vertex'))
+            self.secondcanvas.create_text(x,y,text=str(self.vertexNum), font=(200), tags=('v'+str(self.vertexNum),'label','vertex'))
             self.vertexNum +=1
             self.log('Vertex created at '+str(x)+' and '+str(y))
         else:
             self.log('Can\'t create vertex')
     
+    # Fungsi untuk select vertex
     def selVertex(self,x, y):
         vtag =self.isIntersect(x,y)
         self.currentvertex = vtag
@@ -238,10 +270,11 @@ class Gui(ttk.Frame):
             v = self.secondcanvas.find_withtag(vtag)
             self.secondcanvas.itemconfigure(v[0],outline = 'red')
     
+    # Fungsi untuk delete vertex
     def delVertex(self, x, y):
         vtag = self.isIntersect(x,y)
         if vtag != False:
-            self.log('vertex '+str(vtag)+' deleted')
+            self.log('Vertex '+str(vtag)+' berhasi dihapus')
             self.secondcanvas.delete(vtag)
             self.secondcanvas.delete('li'+vtag)
             self.secondcanvas.delete('lo'+vtag)
@@ -249,14 +282,17 @@ class Gui(ttk.Frame):
             self.secondcanvas.delete('lbo'+vtag)
             self.lineNum = len(self.secondcanvas.find_withtag('line'))
         
+    # Fungsi untuk delete line 
     def delLine(self,x,y,linetag):
         if linetag != False:
-            self.log('line '+str(linetag)+' deleted')
+            self.log('Line '+str(linetag)+' berhasil dihapus')
             self.secondcanvas.delete(self.secondcanvas.find_withtag(linetag)[0]+1)
             self.secondcanvas.delete(linetag)
             self.lineNum-=1
 
-
+    # Fungsi untuk cek apakah klikan mouse berada diatas objek atau tidak
+    # kalau iya, ia akan return tag objek yg bersinggungan
+    # kalau tidak, return false
     def isIntersect(self, x, y,obj='circle'):
         allver = self.secondcanvas.find_withtag(obj)
         self.log('current pos '+str(x)+' '+str(y))
@@ -270,20 +306,43 @@ class Gui(ttk.Frame):
         elif obj == 'line':
             for i in allver:
                 x1,y1,x2,y2 = self.secondcanvas.coords(i)
-                if x>=x1 and y >= y1 and x<=x2 and y<=y2:
-                    vtag = self.secondcanvas.gettags(i)[0]
-                    return vtag
-                self.log(str(x1)+' '+str(y1)+' '+str(x2)+' '+str(y2))
+
+                #cek line vertikal kah?
+                if (x1==x2 or x==x1 or x==x2):
+                    if self.isBetween(x,y,x1,y1,x2,y2):
+                        self.log('Vertical Line !!')
+                        linetag = self.secondcanvas.gettags(i)[0]
+                        return linetag
+                else:
+                    grad = abs((y2-y1)/(x2-x1))
+                    gradcek = abs((y-y1)/(x-x1))
+                    offset = 0.05
+
+                    self.log(str(x1)+' '+str(y1)+' '+str(x2)+' '+str(y2))
+                    self.log('gradient asli = '+str(grad))
+                    self.log('gradient cek = '+str(gradcek))
+
+                    if self.isBetween(x,y,x1,y1,x2,y2) and grad-offset<=gradcek and gradcek <= grad+offset:
+                        linetag = self.secondcanvas.gettags(i)[0]
+                        return linetag
+                self.log('not intersect w line')
 
         return False
-
+    
     def isBetween(self,x,y,x1,y1,x2,y2):
-        if x>=x1 and y >= y1 and x<=x2 and y<=y2:
+        if (x1<=x and x<=x2) and (y1<=y and y<=y2):
+            self.log('isBetween 1')
             return True
-        elif x<=x1 and y <= y1 and x>=x2 and y>=y2:
+        elif (x2<=x and x<=x1) and (y2<=y and y<=y1):
+            self.log('isBetween 2')
             return True
-        elif x>=x1 and y <= y1 and x<=x2 and y>=y2:
+        elif (x1<=x and x<=x2) and (y2<=y and y<=y1):
+            self.log('isBetween 3')
             return True
+        elif (x2<=x and x<=x1) and (y1<=y and y<=y2):
+            self.log('isBetween 4')
+            return True
+        self.log('not in between !')
         return False
 
     def delAll(self, *args):
@@ -347,110 +406,114 @@ class Gui(ttk.Frame):
 
     
     def run(self, *args):
-        self.mode = 'run'
-        self.btnRun.configure(state='disabled')
-        self.btnAdd.configure(state='disabled')
-        self.btnEdit.configure(state='disabled')
-        self.btnClear.configure(state='disabled')
-        self.btnStop.configure(state='normal')
-        comboval = self.getComboVal()
-        self.myobject.DelMyVertexAll()
-        self.myobject.DelMyLineAll()
-        self.myobject.DelMyMstAll()
-        allvertex = self.secondcanvas.find_withtag("circle")
-        alllines = self.secondcanvas.find_withtag('line')
+        if self.mode == 'add' or self.mode == 'edit':
+            self.mode = 'run'
+            self.btnRun.configure(state='disabled')
+            self.btnAdd.configure(state='disabled')
+            self.btnEdit.configure(state='disabled')
+            self.btnClear.configure(state='disabled')
+            self.btnStop.configure(state='normal')
+            comboval = self.getComboVal()
+            self.myobject.DelMyVertexAll()
+            self.myobject.DelMyLineAll()
+            self.myobject.DelMyMstAll()
+            allvertex = self.secondcanvas.find_withtag('circle')
+            alllines = self.secondcanvas.find_withtag('line')
 
-        ### 2 for dibawah gae opo ? ###
-        # Buat komputasi, kan butuh data line nya terhubung vertex apa aja
-        # beratnya berapa
-        # object vertex ga terlalu berguna kalau ndak ada fitur random jumlah vertex & line
-        for i in allvertex:
-            currentvertextag = self.secondcanvas.gettags(i)
-            vertexholder = Vertex()
-            vertexholder.SetTag(currentvertextag)
-            vertexholder.SetIdx(int(currentvertextag[0][1:]))
-            self.myobject.PushMyVertex(vertexholder)
+            ### 2 for dibawah gae opo ? ###
+            # Buat komputasi, kan butuh data line nya terhubung vertex apa aja
+            # beratnya berapa
+            # object vertex ga terlalu berguna kalau ndak ada fitur random jumlah vertex & line
+            for i in allvertex:
+                currentvertextag = self.secondcanvas.gettags(i)
+                vertexholder = Vertex()
+                vertexholder.SetTag(currentvertextag)
+                vertexholder.SetIdx(int(currentvertextag[0][1:]))
+                self.myobject.PushMyVertex(vertexholder)
 
-        if(self.myobject.GetMyVertexSize()==0):
-            messagebox.showwarning("Error occured!","Tidak ada vertex!")
-            return
+            if(self.myobject.GetMyVertexSize()==0):
+                messagebox.showwarning("Error occured!","Tidak ada vertex!")
+                return
 
-        for i in alllines:
-            currentlinetag = self.secondcanvas.gettags(i)
-            lineholder = Line()
-            lineholder.SetWeight(int(currentlinetag[4]))
-            lineholder.SetTag(currentlinetag)
-            lineholder.SetVAll((int(currentlinetag[1][3:]),int(currentlinetag[3][3:])))
-            self.myobject.PushMyLine(lineholder)
-        
+            for i in alllines:
+                currentlinetag = self.secondcanvas.gettags(i)
+                lineholder = Line()
+                lineholder.SetWeight(int(currentlinetag[4]))
+                lineholder.SetTag(currentlinetag)
+                lineholder.SetVAll((int(currentlinetag[1][3:]),int(currentlinetag[3][3:])))
+                self.myobject.PushMyLine(lineholder)
+            
 
-        note=1
-        if comboval == 'Djikstra':
-            self.log('Djikstra Run !')
-            self.popWindow(labeltext="Masukkan titik keberangkatan vertex :")
-            self.wait_window(self.top) #self.top -> variable yg menyimpan object popwindow / dialog
-            start=self.popvalue #popvalue itu yang nyimpan valuenya
-            self.popWindow(labeltext="Masukkan titik tujuan vertex :")
-            self.wait_window(self.top)
-            end=self.popvalue
-            if(self.myobject.GetMyLineSize()==0):
-                return #kalau gak ada line nya ndak ada yg harus di-compute
-            self.secondcanvas.itemconfigure('line',state='hidden')
-            self.myobject.Compute('Djikstra',val1=start,val2=end)
-        elif comboval == 'Prims':
-            self.log('Prims Run !')
-            if(self.myobject.GetMyLineSize()==0):
-                return #kalau gak ada line nya ndak ada yg harus di-compute
-            self.myobject.Compute('Prims',val1=1,val2=self.vertexNum)
-        elif comboval == 'Kruskal':
-            self.log('Kruskal Run !')
-            if(self.myobject.GetMyLineSize()==0):
-                return #kalau gak ada line nya ndak ada yg harus di-compute
-            self.myobject.Compute('Kruskal',val1=self.vertexNum)
-        elif comboval == 'Coloring':
-            self.log('Coloring Run !')
-            colored=self.myobject.Compute('GColor',val1=self.vertexNum)
-            note=2
-        elif comboval == 'Fuery':
-            if(self.myobject.Compute('Feury',val1=self.vertexNum)==False):
-                note=0
-            self.log('Fuery Run !')
-        
-        #masukin hasil komputasi ke queue line yg akan ditampilkan
-        if(note==1):
-            for i in range(0,self.myobject.GetMyMstSize()):
-                holder=self.myobject.GetMyMstAt(i)
-                print(holder.GetTag())
-                linetag=holder.GetTag()
-                self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
-            self.showline()
-        elif(note==2):
-            for i in range(0,self.myobject.GetMyVertexSize()):
-                holder=self.myobject.GetMyVertexAt(i)
-                #reuse line untuk menyimpan objek vertex
-                #simpan warnanya di vertice
-                vtag=holder.GetTag()
-                # print(vtag)
-                vholder=self.secondcanvas.find_withtag(vtag[0])
-                self.lines.append(vholder[0])
-                self.vertice.append(colored[holder.GetIdx()])
-            self.showvertex()
-        elif(note==0):
-            self.log("Graf yang diberikan bukan 'Eulerian Graph' karena memiliki lebih dari 2 vertex yang berderajat ganjil.")
+            note=1
+            if comboval == 'Djikstra':
+                self.log('Djikstra Run !')
+                self.popWindow(labeltext="Masukkan titik keberangkatan vertex :")
+                self.wait_window(self.top) #self.top -> variable yg menyimpan object popwindow / dialog
+                start=self.popvalue #popvalue itu yang nyimpan valuenya
+                self.popWindow(labeltext="Masukkan titik tujuan vertex :",popvalue=2)
+                self.wait_window(self.top)
+                end=self.popvalue
+                if(self.myobject.GetMyLineSize()==0):
+                    return #kalau gak ada line nya ndak ada yg harus di-compute
+                self.secondcanvas.itemconfigure('line',state='hidden')
+                self.myobject.Compute('Djikstra',val1=start,val2=end)
+            elif comboval == 'Prims':
+                self.log('Prims Run !')
+                if(self.myobject.GetMyLineSize()==0):
+                    return #kalau gak ada line nya ndak ada yg harus di-compute
+                self.myobject.Compute('Prims',val1=1,val2=self.vertexNum)
+            elif comboval == 'Kruskal':
+                self.log('Kruskal Run !')
+                if(self.myobject.GetMyLineSize()==0):
+                    return #kalau gak ada line nya ndak ada yg harus di-compute
+                self.myobject.Compute('Kruskal',val1=self.vertexNum)
+            elif comboval == 'Coloring':
+                self.log('Coloring Run !')
+                colored=self.myobject.Compute('GColor',val1=self.vertexNum)
+                note=2
+            elif comboval == 'Fuery':
+                if(self.myobject.Compute('Feury',val1=self.vertexNum)==False):
+                    note=0
+                self.log('Fuery Run !')
+            
+            #masukin hasil komputasi ke queue line yg akan ditampilkan
+            if(note==1):
+                for i in range(0,self.myobject.GetMyMstSize()):
+                    holder=self.myobject.GetMyMstAt(i)
+                    print(holder.GetTag())
+                    linetag=holder.GetTag()
+                    self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
+                self.showline()
+            elif(note==2):
+                for i in range(0,self.myobject.GetMyVertexSize()):
+                    holder=self.myobject.GetMyVertexAt(i)
+                    #reuse line untuk menyimpan objek vertex
+                    #simpan warnanya di vertice
+                    vtag=holder.GetTag()
+                    # print(vtag)
+                    vholder=self.secondcanvas.find_withtag(vtag[0])
+                    self.lines.append(vholder[0])
+                    self.vertice.append(colored[holder.GetIdx()])
+                self.showvertex()
+            elif(note==0):
+                self.log("Graf yang diberikan bukan 'Eulerian Graph' karena memiliki lebih dari 2 vertex yang berderajat ganjil.")
 
     def stop(self,*args):
-        self.secondcanvas.itemconfigure('line',state='normal',fill='blue')
-        self.btnRun.configure(state='normal')
-        self.btnAdd.configure(state='normal')
-        self.btnEdit.configure(state='normal')
-        self.btnClear.configure(state='normal')
-        self.btnStop.configure(state='disabled')
-        self.mode = 'add'
+        if self.mode == 'run':
+            self.secondcanvas.itemconfigure('line',state='normal',fill='blue')
+            self.btnRun.configure(state='normal')
+            self.btnAdd.configure(state='normal')
+            self.btnEdit.configure(state='normal')
+            self.btnClear.configure(state='normal')
+            self.btnStop.configure(state='disabled')
+            self.mode = 'add'
 
     def addMode(self,*args):
-        self.mode = 'add'
-        self.log(self.mode+' on')
+        if self.mode == 'edit':
+            self.mode = 'add'
+            self.log(self.mode+' mode on')
 
     def editMode(self,*args):
-        self.mode = 'edit'
-        self.log(self.mode+' on')
+        if self.mode == 'add':
+            self.mode = 'edit'
+            self.log(self.mode+' mode on')
