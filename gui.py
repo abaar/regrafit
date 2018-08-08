@@ -26,6 +26,7 @@ class Gui(ttk.Frame):
         self.popentry.pack()
         self.popbutton=ttk.Button(top,text="Ok",command=lambda:self.cleansubmit(labeltext,nextmode))
         self.popbutton.pack()
+        self.mode = nextmode
 
     def cleansubmit(self,text,nextmode):
         try:
@@ -300,6 +301,7 @@ class Gui(ttk.Frame):
     def isIntersect(self, x, y,obj='circle'):
         allver = self.secondcanvas.find_withtag(obj)
         self.log('current pos '+str(x)+' '+str(y))
+        self.log(self.mode)
         if obj == 'circle':
             for i in allver:
                 x1,y1,x2,y2 = self.secondcanvas.coords(i)
@@ -616,7 +618,7 @@ class Gui(ttk.Frame):
                 linecoord = self.secondcanvas.coords('ln'+str(self.lineNum))
                 xLineLabel = (linecoord[0]+linecoord[2])/2
                 yLineLabel = (linecoord[1]+linecoord[3])/2
-                self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(weig), font=(200), tags=('lb'+str(self.lineNum),'label','lbo'+str(three),'lbi'+str(target)))
+                self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(weig), font=(200), tags=('lb'+str(self.lineNum),'label','lbov'+str(three),'lbiv'+str(target)))
                 self.lineNum+=1
                 self.secondcanvas.tag_lower(line)
 
@@ -644,7 +646,7 @@ class Gui(ttk.Frame):
                     linecoord = self.secondcanvas.coords('ln'+str(self.lineNum))
                     xLineLabel = (linecoord[0]+linecoord[2])/2
                     yLineLabel = (linecoord[1]+linecoord[3])/2
-                    self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(weig), font=(200), tags=('lb'+str(self.lineNum),'label','lbo'+str(start),'lbi'+str(target)))
+                    self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(weig), font=(200), tags=('lb'+str(self.lineNum),'label','lbov'+str(start),'lbiv'+str(target)))
                     self.lineNum+=1
                     self.secondcanvas.tag_lower(line)
                 except IndexError:
