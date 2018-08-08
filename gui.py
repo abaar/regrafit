@@ -443,7 +443,7 @@ class Gui(ttk.Frame):
             for i in allvertex:
                 currentvertextag = self.secondcanvas.gettags(i)
                 vertexholder = Vertex()
-                print(currentvertextag)
+                # print(currentvertextag)
                 vertexholder.SetTag(currentvertextag)
                 vertexholder.SetIdx(int(currentvertextag[0][1:]))
                 self.myobject.PushMyVertex(vertexholder)
@@ -454,7 +454,7 @@ class Gui(ttk.Frame):
 
             for i in alllines:
                 currentlinetag = self.secondcanvas.gettags(i)
-                print(currentlinetag)
+                # print(currentlinetag)
                 lineholder = Line()
                 lineholder.SetWeight(int(currentlinetag[4]))
                 lineholder.SetTag(currentlinetag)
@@ -499,12 +499,12 @@ class Gui(ttk.Frame):
             if(note==1):
                 for i in range(0,self.myobject.GetMyMstSize()):
                     holder=self.myobject.GetMyMstAt(i)
-                    print(holder.GetTag())
+                    # print(holder.GetTag())
                     linetag=holder.GetTag()
                     self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
                 self.showline()
             elif(note==2):
-                morecolor=[[]]*self.vertexNum
+                # morecolor=[[]]*self.vertexNum
                 if(self.myobject.GetMyVertexSize()<=8):
                     for i in range(0,self.myobject.GetMyVertexSize()):
                         holder=self.myobject.GetMyVertexAt(i)
@@ -515,14 +515,21 @@ class Gui(ttk.Frame):
                         vholder=self.secondcanvas.find_withtag(vtag[0])
                         self.lines.append(vholder[0])
                         self.vertice.append(colored[holder.GetIdx()])
-                    print(colored)
+                    # print(colored)
                 else:
+                    # print(colored)
+                    morecolor=[]
+                    for i in range(0,self.vertexNum+1):
+                        morecolor.append([])
                     for i in range(0,self.myobject.GetMyVertexSize()):
                         holder=self.myobject.GetMyVertexAt(i)
                         vtag=holder.GetTag()
                         vholder=self.secondcanvas.find_withtag(vtag[0])
                         cholder=colored[holder.GetIdx()]
                         morecolor[cholder[1]].append(holder.GetIdx())
+                        #warna ke x append indexnya 
+                        #kayak 'bak' / dikumpulin id vertex sesuai warna
+                        print(morecolor)
                     for i in range(0,self.vertexNum):
                         r=random.randint(0,255)
                         g=random.randint(0,255)
@@ -530,6 +537,7 @@ class Gui(ttk.Frame):
                         output=self.rgb2hex(r,g,b)
                         for j in range(0,len(morecolor[i])):
                             colored[morecolor[i][j]]=(True,output)
+                    
                     for i in range(0,self.myobject.GetMyVertexSize()):
                         holder=self.myobject.GetMyVertexAt(i)
                         vtag=holder.GetTag()
