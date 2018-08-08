@@ -6,7 +6,7 @@ import math
 from line import Line
 from vertex import Vertex
 from myobject import MyObject
-
+import random
 
 class Gui(ttk.Frame):
     def __init__(self, master=None):
@@ -72,17 +72,21 @@ class Gui(ttk.Frame):
         self.btnClear.bind("<Button-1>", self.delAll)
 
         self.btnRun = ttk.Button(self.toolbar, text="Run")
-        self.btnRun.grid(column=4, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
+        self.btnRun.grid(column=5, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
         self.btnRun.bind("<Button-1>", self.run)
 
         self.btnStop = ttk.Button(self.toolbar, text="Stop",state='disabled')
-        self.btnStop.grid(column=5, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
+        self.btnStop.grid(column=6, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
         self.btnStop.bind("<Button-1>", self.stop)
+
+        self.btnRandom = ttk.Button(self.toolbar, text="Random Vertex")
+        self.btnRandom.grid(column=3, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
+        self.btnRandom.bind("<Button-1>", self.randomVertex)
 
         self.dropval = tk.StringVar()
         self.dropdown = ttk.Combobox(self.toolbar, textvariable=self.dropval, state='readonly')
-        self.dropdown['values'] = ("Djikstra", "Prims", "Kruskal", "Coloring", "Fuery")
-        self.dropdown.grid(column=3, row = 0, padx=(10,10))
+        self.dropdown['values'] = ("Djikstra", "Prims", "Kruskal", "Naive Coloring","N Max Coloring" ,"Fuery")
+        self.dropdown.grid(column=4, row = 0, padx=(10,10))
         self.dropdown.current(0)
 
         self.workspace = ttk.Frame(self.mainframe,padding="3 3 12 12")
@@ -399,12 +403,17 @@ class Gui(ttk.Frame):
                 elif(nextcolor[1]==8):
                     #black
                     warna='#000000'
+                else:
+                    warna=nextcolor[1]
                 self.secondcanvas.itemconfigure(nextvertex,fill=warna,outline=warna)
                 self.secondcanvas.after(1000,self.showvertex)
             except IndexError:
                 pass
 
-    
+    def rgb2hex(self,r,g,b):
+        hex = "#{:02x}{:02x}{:02x}".format(r,g,b)
+        return hex
+
     def run(self, *args):
         if self.mode == 'add' or self.mode == 'edit':
             self.mode = 'run'
@@ -412,6 +421,7 @@ class Gui(ttk.Frame):
             self.btnAdd.configure(state='disabled')
             self.btnEdit.configure(state='disabled')
             self.btnClear.configure(state='disabled')
+            self.btnRandom.configure(state='disabled')
             self.btnStop.configure(state='normal')
             comboval = self.getComboVal()
             self.myobject.DelMyVertexAll()
@@ -427,6 +437,7 @@ class Gui(ttk.Frame):
             for i in allvertex:
                 currentvertextag = self.secondcanvas.gettags(i)
                 vertexholder = Vertex()
+                print(currentvertextag)
                 vertexholder.SetTag(currentvertextag)
                 vertexholder.SetIdx(int(currentvertextag[0][1:]))
                 self.myobject.PushMyVertex(vertexholder)
@@ -437,6 +448,7 @@ class Gui(ttk.Frame):
 
             for i in alllines:
                 currentlinetag = self.secondcanvas.gettags(i)
+                print(currentlinetag)
                 lineholder = Line()
                 lineholder.SetWeight(int(currentlinetag[4]))
                 lineholder.SetTag(currentlinetag)
@@ -467,7 +479,7 @@ class Gui(ttk.Frame):
                 if(self.myobject.GetMyLineSize()==0):
                     return #kalau gak ada line nya ndak ada yg harus di-compute
                 self.myobject.Compute('Kruskal',val1=self.vertexNum)
-            elif comboval == 'Coloring':
+            elif comboval == 'Naive Coloring':
                 self.log('Coloring Run !')
                 colored=self.myobject.Compute('GColor',val1=self.vertexNum)
                 note=2
@@ -475,7 +487,8 @@ class Gui(ttk.Frame):
                 if(self.myobject.Compute('Feury',val1=self.vertexNum)==False):
                     note=0
                 self.log('Fuery Run !')
-            
+            elif comboval =='N Max Coloring':
+                print("EA")
             #masukin hasil komputasi ke queue line yg akan ditampilkan
             if(note==1):
                 for i in range(0,self.myobject.GetMyMstSize()):
@@ -485,15 +498,38 @@ class Gui(ttk.Frame):
                     self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
                 self.showline()
             elif(note==2):
-                for i in range(0,self.myobject.GetMyVertexSize()):
-                    holder=self.myobject.GetMyVertexAt(i)
-                    #reuse line untuk menyimpan objek vertex
-                    #simpan warnanya di vertice
-                    vtag=holder.GetTag()
-                    # print(vtag)
-                    vholder=self.secondcanvas.find_withtag(vtag[0])
-                    self.lines.append(vholder[0])
-                    self.vertice.append(colored[holder.GetIdx()])
+                morecolor=[[]]*self.vertexNum
+                if(self.myobject.GetMyVertexSize()<=8):
+                    for i in range(0,self.myobject.GetMyVertexSize()):
+                        holder=self.myobject.GetMyVertexAt(i)
+                        #reuse line untuk menyimpan objek vertex
+                        #simpan warnanya di vertice
+                        vtag=holder.GetTag()
+                        # print(vtag)
+                        vholder=self.secondcanvas.find_withtag(vtag[0])
+                        self.lines.append(vholder[0])
+                        self.vertice.append(colored[holder.GetIdx()])
+                    print(colored)
+                else:
+                    for i in range(0,self.myobject.GetMyVertexSize()):
+                        holder=self.myobject.GetMyVertexAt(i)
+                        vtag=holder.GetTag()
+                        vholder=self.secondcanvas.find_withtag(vtag[0])
+                        cholder=colored[holder.GetIdx()]
+                        morecolor[cholder[1]].append(holder.GetIdx())
+                    for i in range(0,self.vertexNum):
+                        r=random.randint(0,255)
+                        g=random.randint(0,255)
+                        b=random.randint(0,255)
+                        output=self.rgb2hex(r,g,b)
+                        for j in range(0,len(morecolor[i])):
+                            colored[morecolor[i][j]]=(True,output)
+                    for i in range(0,self.myobject.GetMyVertexSize()):
+                        holder=self.myobject.GetMyVertexAt(i)
+                        vtag=holder.GetTag()
+                        vholder=self.secondcanvas.find_withtag(vtag[0])
+                        self.lines.append(vholder[0])
+                        self.vertice.append(colored[holder.GetIdx()])                   
                 self.showvertex()
             elif(note==0):
                 self.log("Graf yang diberikan bukan 'Eulerian Graph' karena memiliki lebih dari 2 vertex yang berderajat ganjil.")
@@ -505,8 +541,12 @@ class Gui(ttk.Frame):
             self.btnAdd.configure(state='normal')
             self.btnEdit.configure(state='normal')
             self.btnClear.configure(state='normal')
-            self.btnStop.configure(state='disabled')
-            self.mode = 'add'
+            self.btnRandom.configure(state='normal')
+            self.btnStop.configure(state='disabled')            
+            allvertex = self.secondcanvas.find_withtag('circle')
+            for i in allvertex:
+                self.secondcanvas.itemconfigure(i,fill="#00BCD4",outline='#0097A7')
+            self.mode='add'
 
     def addMode(self,*args):
         if self.mode == 'edit':
@@ -517,3 +557,95 @@ class Gui(ttk.Frame):
         if self.mode == 'add':
             self.mode = 'edit'
             self.log(self.mode+' mode on')
+
+    def randomVertex(self,*args):
+        self.delAll()
+        totalVertex=random.randint(6,10)
+        occupied=[]
+        for i in range(0,12):
+            occupied.append([])
+            for j in range(0,12):
+                occupied[i].append(False)
+        #buat simpen di titik i,j udah ada vertexnya belum
+        r=20
+        coords=[]
+        coords.append((0,0))
+        for i in range(0,totalVertex):
+            x=random.randint(1,10)
+            y=random.randint(1,5)
+            while(occupied[x][y]):
+                x=random.randint(1,10)
+                y=random.randint(1,5)
+            occupied[x][y]=True
+            x=x*70
+            y=y*90
+            #random 1-10 trus dikalikan pixel nya biar estetik
+            #kan 720x480
+            coords.append((x,y))
+            self.secondcanvas.create_oval(x+r, y+r, x-r,y-r,fill="#00BCD4", outline="#0097A7", width=2, tags=('v'+str(self.vertexNum),'circle','vertex'))
+            self.secondcanvas.create_text(x,y,text=str(self.vertexNum), font=(200), tags=('v'+str(self.vertexNum),'label','vertex'))
+            self.vertexNum=self.vertexNum+1            
+        
+        threedegree=random.randint(1,2)
+        vertexdegree=[0]*(self.vertexNum)
+        occupied=[]
+        for i in range(0,self.vertexNum):
+            occupied.append([])
+            for j in range(0,self.vertexNum):
+                occupied[i].append(False)
+        #buat ngecek i->j udah ada line nya blm , vice versa
+
+        prev=0
+        for i in range(0,threedegree):
+            three=random.randint(1,self.vertexNum-1)
+            while(threedegree>1 and prev==three):
+                three=random.randint(1,self.vertexNum-1)
+            vertexdegree[three]=3
+            xvertex,yvertex = coords[three] #coords from
+            for j in range(0,3):
+                target=random.randint(1,self.vertexNum-1)
+                #kalau sama / three->target udah ada line / degree target >=3 cari lagi
+                while(target==three or occupied[three][target] or vertexdegree[target]>=3):
+                    target=random.randint(1,self.vertexNum-1)
+                    #jadi selama dia udah keipilih random terus
+                occupied[three][target]=True
+                vertexdegree[target]+=1
+                xtvertex,ytvertex=coords[target] #coords target
+                weig=random.randint(1,50)
+                line=self.secondcanvas.create_line((xvertex,yvertex,xtvertex,ytvertex),fill='blue',width=3,tags=('ln'+str(self.lineNum),'lov'+str(three),'line','liv'+str(target),str(weig)))
+                linecoord = self.secondcanvas.coords('ln'+str(self.lineNum))
+                xLineLabel = (linecoord[0]+linecoord[2])/2
+                yLineLabel = (linecoord[1]+linecoord[3])/2
+                self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(weig), font=(200), tags=('lb'+str(self.lineNum),'label','lbo'+str(three),'lbi'+str(target)))
+                self.lineNum+=1
+                self.secondcanvas.tag_lower(line)
+
+        #nah disini untuk yg belum kena degree
+        #counter=0
+        zerovertex=[]
+        for i in range(1,len(vertexdegree)):
+            if(vertexdegree[i]==0):
+                zerovertex.append(i)
+        counter=len(zerovertex)
+
+        if(totalVertex-counter>=2):
+            fullgraph=random.randint(0,1)
+            for i in range(0,totalVertex-counter-fullgraph):
+                try:
+                    start=zerovertex.pop(0)
+                    xvertex,yvertex=coords[start]
+                    target=random.randint(1,self.vertexNum-1)
+                    while(occupied[start][target] or start==target):
+                        target=random.randint(1,self.vertexNum-1)
+                    xtvertex,ytvertex=coords[target]
+                    occupied[start][target]=True
+                    weig=random.randint(1,50)
+                    line=self.secondcanvas.create_line((xvertex,yvertex,xtvertex,ytvertex),fill='blue',width=3,tags=('ln'+str(self.lineNum),'lov'+str(start),'line','liv'+str(target),str(weig)))
+                    linecoord = self.secondcanvas.coords('ln'+str(self.lineNum))
+                    xLineLabel = (linecoord[0]+linecoord[2])/2
+                    yLineLabel = (linecoord[1]+linecoord[3])/2
+                    self.secondcanvas.create_text(xLineLabel,yLineLabel,text=str(weig), font=(200), tags=('lb'+str(self.lineNum),'label','lbo'+str(start),'lbi'+str(target)))
+                    self.lineNum+=1
+                    self.secondcanvas.tag_lower(line)
+                except IndexError:
+                    pass
