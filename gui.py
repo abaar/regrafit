@@ -26,6 +26,10 @@ class Gui(ttk.Frame):
         self.popentry.pack()
         self.popbutton=ttk.Button(top,text="Ok",command=lambda:self.cleansubmit(labeltext,nextmode))
         self.popbutton.pack()
+        top.protocol("WM_DELETE_WINDOW", lambda:self.onClosing(top,nextmode))
+    
+    def onClosing(self,top,nextmode):
+        top.destroy()
         self.mode = nextmode
 
     def cleansubmit(self,text,nextmode):
