@@ -2,6 +2,7 @@ from line import Line
 from vertex import Vertex
 from graph import Graph
 
+
 class MyObject:
 	__myvertex=[]
 	__myline=[]
@@ -269,35 +270,101 @@ class MyObject:
 					disablecolor=colored[currentvertex][1]
 					availcolor[self.__myline[i].GetVstart()][disablecolor]=False
 					nextvertex.append(self.__myline[i].GetVstart())
-			while(len(nextvertex)!=0):
-				now=nextvertex.pop(0)
-				clr=0
-				seek=True
-				for i in range(0,len(self.__myvertex)):
-					if(seek and availcolor[now][i]):
-						clr=i
-						seek=False
-					elif(seek and i==len(self.__myvertex)-1):
-						clr=-1
-						#ndak ada yg bisa dijadikan warna
-					elif(not seek):
-						availcolor[now][i]=False
-						#ketemu matikan yang lain
-				if(clr!=-1):
-					colored[now]=(True,clr)
-					for i in range(0,len(self.__myline)):
-						if(now==self.__myline[i].GetVstart() and not colored[self.__myline[i].GetVend()][0]):
-							disablecolor=colored[now][1]
-							availcolor[self.__myline[i].GetVend()][disablecolor]=False
-							nextvertex.append(self.__myline[i].GetVend())
-						elif(now==self.__myline[i].GetVend() and not colored[self.__myline[i].GetVstart()][0]):
-							disablecolor=colored[now][1]
-							availcolor[self.__myline[i].GetVstart()][disablecolor]=False
-							nextvertex.append(self.__myline[i].GetVstart())
+			completed=False
+			loop=1
+			while(not completed):
+				if(loop!=1):
+					for i in range(1,len(self.__myvertex)):
+						if(not colored[self.__myvertex[i].GetIdx()][0]):
+							currentvertex=self.__myvertex[i].GetIdx()
+							colored[currentvertex]=(True,0)
+							for j in range(0,len(self.__myline)):
+								if(currentvertex==self.__myline[j].GetVstart()):
+									disablecolor=colored[currentvertex][1]
+									availcolor[self.__myline[j].GetVend()][disablecolor]=False
+									nextvertex.append(self.__myline[j].GetVend())
+								elif(currentvertex==self.__myline[j].GetVend()):
+									disablecolor=colored[currentvertex][1]
+									availcolor[self.__myline[j].GetVstart()][disablecolor]=False
+									nextvertex.append(self.__myline[j].GetVstart())
+							break
+				
+				while(len(nextvertex)!=0):
+					now=nextvertex.pop(0)
+					clr=0
+					seek=True
+					for i in range(0,len(self.__myvertex)):
+						if(seek and availcolor[now][i]):
+							clr=i
+							seek=False
+						elif(seek and i==len(self.__myvertex)-1):
+							clr=-1
+							#ndak ada yg bisa dijadikan warna
+						elif(not seek):
+							availcolor[now][i]=False
+							#ketemu matikan yang lain
+					if(clr!=-1):
+						colored[now]=(True,clr)
+						for i in range(0,len(self.__myline)):
+							if(now==self.__myline[i].GetVstart() and not colored[self.__myline[i].GetVend()][0]):
+								disablecolor=colored[now][1]
+								availcolor[self.__myline[i].GetVend()][disablecolor]=False
+								nextvertex.append(self.__myline[i].GetVend())
+							elif(now==self.__myline[i].GetVend() and not colored[self.__myline[i].GetVstart()][0]):
+								disablecolor=colored[now][1]
+								availcolor[self.__myline[i].GetVstart()][disablecolor]=False
+								nextvertex.append(self.__myline[i].GetVstart())
 
-			#pada baris ini, ketika dijalankan colored yg bernilai False yg memiliki idx sesuai index vertex
-			#pasti memiliki warna 0
+				for i in range(0,len(self.__myvertex)):
+					if(not colored[self.__myvertex[i].GetIdx()][0]):
+						completed=False
+						break
+					completed=True
+				loop+=1
+				#pada baris ini, ketika dijalankan colored yg bernilai False 
+				#maka ada 2 kemungkinan, isolated vertex / graph yang berbeda
+				#isolated vertex pasti bernilai 0, sedangkan graph yang berbeda
+				#akan beda lagi penanganannya
+
+				#salah disini
 			return colored
+		elif(algorithm=='BColor'):
+			self.DelMyMstAll()
+			maxColour=val2
+			totVertex=val1
+
+			g=Graph(totVertex)
+
+			carry=[]
+			for i in range(0,totVertex):
+				carry.append([])
+				for j in range(0,totVertex):
+					carry[i].append(0)
+
+
+			for i in range(0,len(self.__myline)):
+				hold=self.__myline[i]
+				v=hold.GetVstart()
+				w=hold.GetVend()
+				# print((v,w))
+				carry[v][w]=1
+				carry[w][v]=1
+
+			# print(carry)
+			g.setGraph2(carry)
+			colour=g.graphColouring(maxColour)
+
+			if(not colour):
+				return False
+
+			realcolour=list()
+			realcolour.append(0)
+			for i in range(0,len(self.__myvertex)):
+				realcolour.append((True,colour[self.__myvertex[i].GetIdx()]))
+
+			return realcolour
+
+			#kari masalah view
 
 
 

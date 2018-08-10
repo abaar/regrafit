@@ -10,11 +10,45 @@ class Graph:
         self.graph = defaultdict(list) # default dictionary to store graph
         self.Time = 0
         self.eupath=list()
+        self.graph2 = [[0 for column in range(vertices)]\
+                            for row in range(vertices)]
     # function to add an edge to graph
     def addEdge(self,v,w):
         self.graph[v].append(w) #Add w to v_s list
         self.graph[w].append(v) #Add v to w_s list
-  
+
+    def setGraph2(self,carry):
+        self.graph2=carry
+    # A utility function to check if the current color assignment
+    # is safe for vertex v
+    def isSafe(self, v, colour, c):
+        for i in range(self.V):
+            if self.graph2[v][i] == 1 and colour[i] == c:
+                return False
+        return True
+    
+    # A recursive utility function to solve m
+    # coloring problem
+    def graphColourUtil(self, m, colour, v):
+        if v == self.V:
+            return True
+
+        for c in range(1, m+1):
+            if self.isSafe(v, colour, c) == True:
+                colour[v] = c
+                if self.graphColourUtil(m, colour, v+1) == True:
+                    return True
+                colour[v] = 0
+
+    def graphColouring(self, m):
+        colour = [0] * self.V
+        if self.graphColourUtil(m, colour, 0) == False:
+            return False
+
+        # Print the solution
+        return colour
+
+
     # A recursive function that uses visited[] and parent to detect
     # cycle in subgraph reachable from vertex v.
     def isCyclicUtil(self,v,visited,parent):

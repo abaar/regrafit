@@ -494,7 +494,15 @@ class Gui(ttk.Frame):
                     note=0
                 self.log('Fuery Run !')
             elif comboval =='N Max Coloring':
-                print("EA")
+                self.popWindow(labeltext='Masukkan jumlah maksimal warna!')
+                self.wait_window(self.top)
+                nColour=self.popvalue
+                colored=self.myobject.Compute('BColor',val1=self.vertexNum,val2=nColour)
+                if(not colored):
+                    note=-1
+                    self.log("Tidak bisa menemukan kombinasi warna-nya!")
+                else:
+                    note=2
             #masukin hasil komputasi ke queue line yg akan ditampilkan
             if(note==1):
                 for i in range(0,self.myobject.GetMyMstSize()):
@@ -524,12 +532,14 @@ class Gui(ttk.Frame):
                     for i in range(0,self.myobject.GetMyVertexSize()):
                         holder=self.myobject.GetMyVertexAt(i)
                         vtag=holder.GetTag()
-                        vholder=self.secondcanvas.find_withtag(vtag[0])
+                        # vholder=self.secondcanvas.find_withtag(vtag[0])
+                        # print(holder.GetIdx())
+                        # print(colored[holder.GetIdx()])
                         cholder=colored[holder.GetIdx()]
                         morecolor[cholder[1]].append(holder.GetIdx())
                         #warna ke x append indexnya 
                         #kayak 'bak' / dikumpulin id vertex sesuai warna
-                        print(morecolor)
+                        # print(morecolor)
                     for i in range(0,self.vertexNum):
                         r=random.randint(0,255)
                         g=random.randint(0,255)
@@ -663,3 +673,4 @@ class Gui(ttk.Frame):
                     self.secondcanvas.tag_lower(line)
                 except IndexError:
                     pass
+        self.log("Total vertex :" + str(self.vertexNum))
