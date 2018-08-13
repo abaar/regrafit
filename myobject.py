@@ -65,6 +65,7 @@ class MyObject:
 			#Creating MST using Kruskal, steps :
 			# 1. Sort it based on its weight
 			# 2. Push from the smallest to the highest with no cyclic
+			cycliclist=list()
 			self.DelMyMstAll()
 			cyclicchecker=Graph(val1)
 			for i in range(0,len(self.__myline)):
@@ -84,10 +85,13 @@ class MyObject:
 				cyclicchecker.addEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
 				if (cyclicchecker.isCyclic()):
 					cyclicchecker.deleteEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
+					cycliclist.append(i)
 				else:
 					self.__mymst.append(self.__myline[i])
 			#print(self.__mymst)
 			del cyclicchecker
+
+			return cycliclist
 		elif (algorithm=="Djikstra"):
 			self.DelMyMstAll()
 			#
@@ -168,6 +172,7 @@ class MyObject:
 			self.DelMyMstAll()
 			visited=[]
 			mylist=[]
+			listPeriter=[]
 			mylist_cyclic=[]
 			for i in range (0,len(self.__myvertex)+1):
 				visited.append(False)
@@ -180,10 +185,14 @@ class MyObject:
 					# i-th line with 0 means not yet taken
 			cyclicchecker=Graph(val2)
 
+			currentiter=0
 			while(len(mylist)!=0):
+				listPeriter.append([])
 				smallest=self.__intmax
 				idx=0
 				for i in range(0,len(mylist)):
+					curobj=self.__myline[mylist[i]]
+					listPeriter[currentiter].append((curobj.GetVend(),curobj.GetVstart()))
 					if (smallest>self.__myline[mylist[i]].GetWeight()):
 						smallest=self.__myline[mylist[i]].GetWeight()
 						idx=i
@@ -217,7 +226,9 @@ class MyObject:
 			
 					visited[target]=True
 					del mylist[idx]
+				currentiter+=1
 			del cyclicchecker
+			return listPeriter
 		elif (algorithm=="Feury"):
 			self.DelMyMstAll()
 			graph=Graph(val1)
