@@ -99,6 +99,7 @@ class MyObject:
 			predecessor=[]
 			visited=[]
 			route=[]
+			process=[]
 			for x in range(-1,len(self.__myvertex)):
 				dist.append(self.__intmax)
 				visited.append(False)
@@ -142,13 +143,16 @@ class MyObject:
 						if (visited[v]==False and dist[u]!=self.__intmax and dist[u]+self.__myline[j].GetWeight()<dist[v]):
 							dist[v]=dist[u]+self.__myline[j].GetWeight()
 							predecessor[v]=u
+							process.append((v,u,dist[v]))
 					elif(u==vend and u!=vstart):
 						v=vstart
 						if (visited[v]==False and dist[u]!=self.__intmax and dist[u]+self.__myline[j].GetWeight()<dist[v]):
 							dist[v]=dist[u]+self.__myline[j].GetWeight()
 							predecessor[v]=u
+							process.append((v,u,dist[v]))
 
 				predec=u
+			return process
 			#print(route[val2]) sudah bener
 
 			for i in range(0,len(route[val2])):

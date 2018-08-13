@@ -468,6 +468,9 @@ class Gui(ttk.Frame):
         if self.mode == 'add' or self.mode == 'edit':
             self.mode = 'run'
             self.idx=0
+            self.lines=[]
+            self.vertice=[]
+            self.linesaver=[]
             self.btnRun.configure(state='disabled')
             self.btnAdd.configure(state='disabled')
             self.btnEdit.configure(state='disabled')
@@ -520,8 +523,22 @@ class Gui(ttk.Frame):
                 if(self.myobject.GetMyLineSize()==0):
                     return #kalau gak ada line nya ndak ada yg harus di-compute
                 self.secondcanvas.itemconfigure('line',state='hidden')
-                self.myobject.Compute('Djikstra',val1=start,val2=end)
+                process=self.myobject.Compute('Djikstra',val1=start,val2=end)
+                for i in allvertex:
+                    x,y,x1,y1=self.secondcanvas.coords(i)
+                    tag=self.secondcanvas.gettags(i)
+                    self.secondcanvas.create_text(x+20,y-15,text="-",font=(200),tags=(tag[0][1:],'weight'))
 
+                for i in range(0,len(process)):
+                    for j in range(0,len(self.myobject.GetMyLineSize())):
+                        lholder=self.myobject.GetMyLineAt(i)
+                        v=lholder.GetVend()
+                        w=lholder.GetVstart()
+                        ltag=lholder.GetTag()
+                        lobj=self.secondcanvas.find_withtag(ltag[0])
+                        if(process[0]==v and process[1]==w):
+                            self.linesaver.append(lobj)
+                            self.vertice.append(process[2])
 
             elif comboval == 'Prims':
                 self.log('Running Prims !')
