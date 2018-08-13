@@ -191,7 +191,7 @@ class Gui(ttk.Frame):
             cekline = self.secondcanvas.find_withtag('ln'+str(self.lineNum)) 
            
            #jika vertex tujuan != false dan vertex tujuan !=vertex awal dan line hasil cLM sudah terbuat
-            if vtag != False and vtag != curvtex and cekline:
+            if vtag != False and curvtex!=False and vtag != curvtex and cekline:
                 #simpan coor vertex tujuan
                 label = self.secondcanvas.find_withtag(vtag)[1]
                 # self.log(self.secondcanvas.coords(label))
