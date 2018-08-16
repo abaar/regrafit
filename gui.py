@@ -729,7 +729,7 @@ class Gui(ttk.Frame):
             allvertex = self.secondcanvas.find_withtag('circle')
             for i in allvertex:
                 self.secondcanvas.itemconfigure(i,fill="#00BCD4",outline='#0097A7')
-            self.mode='add'
+            self.mode=self.beforeRunMode
 
     def addMode(self,*args):
         if self.mode == 'edit':
