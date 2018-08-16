@@ -143,16 +143,16 @@ class MyObject:
 						if (visited[v]==False and dist[u]!=self.__intmax and dist[u]+self.__myline[j].GetWeight()<dist[v]):
 							dist[v]=dist[u]+self.__myline[j].GetWeight()
 							predecessor[v]=u
-							process.append((v,u,dist[v]))
+							process.append((u,route[u],v,dist[v]))
 					elif(u==vend and u!=vstart):
 						v=vstart
 						if (visited[v]==False and dist[u]!=self.__intmax and dist[u]+self.__myline[j].GetWeight()<dist[v]):
 							dist[v]=dist[u]+self.__myline[j].GetWeight()
 							predecessor[v]=u
-							process.append((v,u,dist[v]))
+							process.append((u,route[u],v,dist[v]))
 
 				predec=u
-			return process
+			
 			#print(route[val2]) sudah bener
 
 			for i in range(0,len(route[val2])):
@@ -170,7 +170,7 @@ class MyObject:
 			
 			#print(self.__mymst[0].GetTag()) sudah bener
 
-
+			return process
 
 		elif(algorithm=="Prims"):
 			self.DelMyMstAll()

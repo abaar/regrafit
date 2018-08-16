@@ -409,6 +409,22 @@ class Gui(ttk.Frame):
             except IndexError:
                 pass
 
+    def animatedjikstra(self):
+        if(self.mode=='run'):
+            try:
+                # tag=self.myobject.GetMyVertexAt(self.idx).GetIdx()
+                weight=self.vertice.pop(0)
+                print(weight)
+                self.secondcanvas.itemconfigure('w'+str(weight[1]),text=str(weight[0]))
+                self.secondcanvas.itemconfigure('line',fill='blue')
+                nextroute=self.linesaver.pop(0)
+                self.idx+=1
+                for i in nextroute:
+                    self.secondcanvas.itemconfigure(i,state='normal',fill='yellow')
+                self.secondcanvas.after(1000,self.animatedjikstra)
+            except IndexError:
+                self.secondcanvas.itemconfigure('line',fill='blue')
+                self.showline()
 
     def showline(self):
         if self.mode == 'run':
@@ -520,25 +536,50 @@ class Gui(ttk.Frame):
                 self.popWindow(labeltext="Masukkan titik tujuan vertex :",popvalue=2)
                 self.wait_window(self.top)
                 end=self.popvalue
+                # self.vertice.append((0,start))
                 if(self.myobject.GetMyLineSize()==0):
                     return #kalau gak ada line nya ndak ada yg harus di-compute
-                self.secondcanvas.itemconfigure('line',state='hidden')
+                # self.secondcanvas.itemconfigure('line',state='hidden')
                 process=self.myobject.Compute('Djikstra',val1=start,val2=end)
                 for i in allvertex:
                     x,y,x1,y1=self.secondcanvas.coords(i)
                     tag=self.secondcanvas.gettags(i)
-                    self.secondcanvas.create_text(x+20,y-15,text="-",font=(200),tags=(tag[0][1:],'weight'))
-
+                    self.secondcanvas.create_text(x+20,y-15,text="-",font=(200),tags=('w'+str(tag[0][1:]),'weight'),fill='blue')
+                self.secondcanvas.itemconfigure('w'+str(start),text=str(0))
                 for i in range(0,len(process)):
-                    for j in range(0,len(self.myobject.GetMyLineSize())):
-                        lholder=self.myobject.GetMyLineAt(i)
+                    routehold=process[i][1]
+                    routeme=[]
+                    for j in range(0,self.myobject.GetMyLineSize()):
+                        lholder=self.myobject.GetMyLineAt(j)
                         v=lholder.GetVend()
                         w=lholder.GetVstart()
                         ltag=lholder.GetTag()
                         lobj=self.secondcanvas.find_withtag(ltag[0])
-                        if(process[0]==v and process[1]==w):
-                            self.linesaver.append(lobj)
-                            self.vertice.append(process[2])
+                        # print(process[i])
+                        # print(str(v)+" "+str(w))
+                        if(len(routehold)-1!=0):
+                            for k in range(0,len(routehold)-1):
+                                if(v==routehold[k] and w == routehold[k+1]):
+                                    routeme.append(lobj)
+                                    # print("-"+ str(ltag))
+                                elif(v==routehold[k+1] and w ==routehold[k]):
+                                    routeme.append(lobj)
+                                    # print("-"+str(ltag))
+                        if(process[i][0]==v and process[i][2]==w):
+                            routeme.append(lobj)
+                            # print(ltag)
+                        elif(process[i][0]==w and process[i][2]==v):
+                            routeme.append(lobj)
+                            # print(ltag)
+                    # print(routehold)
+                    # print("----")
+                    # print(process[i])
+                    #kari update bobote
+                    self.vertice.append((process[i][3],process[i][2])) 
+                    self.linesaver.append(routeme)
+
+                self.animatedjikstra()
+                # self.secondcanvas.itemconfigure('line',fill='blue')
 
             elif comboval == 'Prims':
                 self.log('Running Prims !')
@@ -620,7 +661,8 @@ class Gui(ttk.Frame):
                     linetag=holder.GetTag()
                     self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
                 if(comboval!='Prims'):
-                    self.showline()
+                    if(comboval!='Djikstra'):
+                        self.showline()
                 else:
                     self.linesaver=self.lines
                     self.animateprim()
@@ -673,6 +715,7 @@ class Gui(ttk.Frame):
 
     def stop(self,*args):
         if self.mode == 'run':
+            self.secondcanvas.delete('weight')
             self.secondcanvas.itemconfigure('line',state='normal',fill='blue')
             self.btnRun.configure(state='normal')
             self.btnAdd.configure(state='normal')
