@@ -418,7 +418,7 @@ class Gui(ttk.Frame):
                 # tag=self.myobject.GetMyVertexAt(self.idx).GetIdx()
                 weight=self.vertice.pop(0)
                 # print(weight)
-                self.log('Exploring possible route to search the sortest path to each vertex')
+                # self.log('Exploring possible route to search the sortest path to each vertex')
                 self.log('Update '+str(weight[1])+"'s distance!")
                 self.log("Adding new possible vertex!")
                 self.secondcanvas.itemconfigure('w'+str(weight[1]),text=str(weight[0]))
