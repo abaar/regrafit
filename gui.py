@@ -68,7 +68,7 @@ class Gui(ttk.Frame):
         self.toolbar = ttk.Frame(self.mainframe,padding="3 3 12 12")
         self.toolbar.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
 
-        self.btnAdd = ttk.Button(self.toolbar, text="Add Mode")
+        self.btnAdd = ttk.Button(self.toolbar, text="Add Mode",state='disabled')
         self.btnAdd.grid(column=0, row=0, sticky=(tk.N, tk.W, tk.E, tk.S))
         self.btnAdd.bind("<Button-1>", self.addMode)
 
@@ -482,6 +482,7 @@ class Gui(ttk.Frame):
 
     def run(self, *args):
         if self.mode == 'add' or self.mode == 'edit':
+            self.beforeRunMode = self.mode
             self.mode = 'run'
             self.idx=0
             self.lines=[]
@@ -718,8 +719,10 @@ class Gui(ttk.Frame):
             self.secondcanvas.delete('weight')
             self.secondcanvas.itemconfigure('line',state='normal',fill='blue')
             self.btnRun.configure(state='normal')
-            self.btnAdd.configure(state='normal')
-            self.btnEdit.configure(state='normal')
+            if self.beforeRunMode == 'add':
+                self.btnEdit.configure(state='normal')
+            else:
+                self.btnAdd.configure(state='normal')
             self.btnClear.configure(state='normal')
             self.btnRandom.configure(state='normal')
             self.btnStop.configure(state='disabled')            
@@ -732,11 +735,16 @@ class Gui(ttk.Frame):
         if self.mode == 'edit':
             self.mode = 'add'
             self.log(self.mode+' mode on')
+            self.btnAdd.configure(state='disabled')
+            self.btnEdit.configure(state='normal')
+  
 
     def editMode(self,*args):
         if self.mode == 'add':
             self.mode = 'edit'
             self.log(self.mode+' mode on')
+            self.btnAdd.configure(state='normal')
+            self.btnEdit.configure(state='disabled')
 
     def randomVertex(self,*args):
         self.log("Generating graph !")
