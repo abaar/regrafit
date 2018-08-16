@@ -295,7 +295,7 @@ class Gui(ttk.Frame):
             self.secondcanvas.delete('lo'+vtag)
             self.secondcanvas.delete('lbi'+vtag)
             self.secondcanvas.delete('lbo'+vtag)
-            self.lineNum = len(self.secondcanvas.find_withtag('line'))
+            self.lineNum = len(self.secondcanvas.find_withtag('line'))+1
         
     # Fungsi untuk delete line 
     def delLine(self,x,y,linetag):
