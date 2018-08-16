@@ -35,14 +35,21 @@ class Gui(ttk.Frame):
     def cleansubmit(self,text,nextmode):
         try:
             value=int(self.popentry.get())
-            self.top.destroy()
-            self.popvalue=value
-            self.mode = nextmode
+            if value > 0:
+                self.top.destroy()
+                self.popvalue=value
+                self.mode = nextmode
+            else:
+                self.onPopError(labeltext=text,nextmode=nextmode,popvalue=self.popvalue)
+
         except ValueError:
-            self.top.destroy()
-            messagebox.showwarning("Error Occured", "Masukkan integer, jangan yang lain!")
-            self.popWindow(labeltext=text)
-            self.wait_window(self.top)
+            self.onPopError(labeltext=text,nextmode=nextmode,popvalue=self.popvalue)
+
+    def onPopError(self,labeltext="Isi berat/jarak (integer):",popvalue = 1,nextmode = 'run'):
+        self.top.destroy()
+        messagebox.showwarning("Error Occured", "Masukkan bilangan bulat positif lebih dari 0, jangan yang lain!")
+        self.popWindow(labeltext=labeltext,popvalue=popvalue,nextmode=nextmode)
+        self.wait_window(self.top)
 
     # untuk buat tampilan-tampilannnya
     def create_widgets(self):
