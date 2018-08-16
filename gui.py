@@ -385,7 +385,10 @@ class Gui(ttk.Frame):
     
     def greenmein(self):
         if self.mode=='run':
-            self.secondcanvas.itemconfigure(self.linesaver[self.idx],fill='green')
+            try:
+                self.secondcanvas.itemconfigure(self.linesaver[self.idx],fill='green')
+            except IndexError:
+                pass
             self.log("Found!")
             # self.lines.pop(0)
             self.secondcanvas.after(1000,self.backmenormal)
@@ -414,11 +417,15 @@ class Gui(ttk.Frame):
             try:
                 # tag=self.myobject.GetMyVertexAt(self.idx).GetIdx()
                 weight=self.vertice.pop(0)
-                print(weight)
+                # print(weight)
+                self.log('Exploring possible route to search the sortest path to each vertex')
+                self.log('Update '+str(weight[1])+"'s distance!")
+                self.log("Adding new possible vertex!")
                 self.secondcanvas.itemconfigure('w'+str(weight[1]),text=str(weight[0]))
                 self.secondcanvas.itemconfigure('line',fill='blue')
                 nextroute=self.linesaver.pop(0)
                 self.idx+=1
+                # self.log("")
                 for i in nextroute:
                     self.secondcanvas.itemconfigure(i,state='normal',fill='yellow')
                 self.secondcanvas.after(1000,self.animatedjikstra)
@@ -713,6 +720,7 @@ class Gui(ttk.Frame):
                 self.showvertex()
             elif(note==0):
                 self.log("Graf yang diberikan bukan 'Eulerian Graph' karena memiliki lebih dari 2 vertex yang berderajat ganjil.")
+            self.log("Computation Ended")
 
     def stop(self,*args):
         if self.mode == 'run':
