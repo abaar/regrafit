@@ -387,8 +387,8 @@ class Gui(ttk.Frame):
                 try:
                     self.secondcanvas.itemconfigure(self.linesaver[i],fill='green')
                 except IndexError:
-                    self.log('backmenormal done')
-                    self.stop()
+                    # self.log('backmenormal done')
+                    # self.stop()
                     pass
             self.log("Adding new possible edges")
     
