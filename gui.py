@@ -302,7 +302,7 @@ class Gui(ttk.Frame):
             self.secondcanvas.delete('lo'+vtag)
             self.secondcanvas.delete('lbi'+vtag)
             self.secondcanvas.delete('lbo'+vtag)
-            self.lineNum = len(self.secondcanvas.find_withtag('line'))+1
+            # self.lineNum = len(self.secondcanvas.find_withtag('line'))+1
         
     # Fungsi untuk delete line 
     def delLine(self,x,y,linetag):
@@ -310,7 +310,7 @@ class Gui(ttk.Frame):
             self.log('Line '+str(linetag)+' berhasil dihapus')
             self.secondcanvas.delete(self.secondcanvas.find_withtag(linetag)[0]+1)
             self.secondcanvas.delete(linetag)
-            self.lineNum-=1
+            # self.lineNum-=1
 
     # Fungsi untuk cek apakah klikan mouse berada diatas objek atau tidak
     # kalau iya, ia akan return tag objek yg bersinggungan
@@ -387,6 +387,8 @@ class Gui(ttk.Frame):
                 try:
                     self.secondcanvas.itemconfigure(self.linesaver[i],fill='green')
                 except IndexError:
+                    self.log('backmenormal done')
+                    self.stop()
                     pass
             self.log("Adding new possible edges")
     
@@ -417,6 +419,8 @@ class Gui(ttk.Frame):
                 self.secondcanvas.after(1000*(llen),self.greenmein)
                 self.secondcanvas.after(1000*(llen+2),self.animateprim)
             except IndexError:
+                self.log('Prims Selesai !')
+                # self.stop()
                 pass
 
     def animatedjikstra(self):
@@ -442,12 +446,18 @@ class Gui(ttk.Frame):
 
     def showline(self):
         if self.mode == 'run':
+            comboval = self.getComboVal()
             try:
                 nextline=self.lines.pop(0)
                 self.log(nextline)
                 self.secondcanvas.itemconfigure(nextline,state='normal',fill=self.linecolor)
                 self.secondcanvas.after(1000,self.showline)
             except IndexError:
+                if comboval == 'Prims':
+                    self.log('Tampilkan Line !')
+                else:
+                    self.log(comboval+' Selesai !')
+                # self.stop()
                 pass
     
     def showvertex(self):
@@ -488,6 +498,8 @@ class Gui(ttk.Frame):
                 self.secondcanvas.itemconfigure(nextvertex,fill=warna,outline=warna)
                 self.secondcanvas.after(1000,self.showvertex)
             except IndexError:
+                self.log('Coloring Selesai !')
+                # self.stop()
                 pass
 
     def rgb2hex(self,r,g,b):
@@ -658,7 +670,7 @@ class Gui(ttk.Frame):
                 # self.log('Fuery Run !')
             elif comboval =='N Max Coloring':
                 self.log("Running N Max Coloring")
-                self.popWindow(labeltext='Masukkan jumlah maksimal warna!')
+                self.popWindow(labeltext='Masukkan jumlah maksimal warna!',popvalue=3)
                 self.wait_window(self.top)
                 nColour=self.popvalue
                 colored=self.myobject.Compute('BColor',val1=self.vertexNum,val2=nColour)
@@ -727,7 +739,9 @@ class Gui(ttk.Frame):
                 self.showvertex()
             elif(note==0):
                 self.log("Graf yang diberikan bukan 'Eulerian Graph' karena memiliki lebih dari 2 vertex yang berderajat ganjil.")
+                self.stop()
             self.log("Computation Ended")
+            # self.stop()
 
     def stop(self,*args):
         if self.mode == 'run':
