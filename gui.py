@@ -396,7 +396,7 @@ class Gui(ttk.Frame):
                     # self.log('backmenormal done')
                     # self.stop()
                     pass
-            self.log("Adding new possible edges")
+            self.log("Adding new possible edges(if any)")
     
     def greenmein(self):
         if self.mode=='run':
@@ -404,7 +404,12 @@ class Gui(ttk.Frame):
                 self.secondcanvas.itemconfigure(self.linesaver[self.idx],fill='green')
             except IndexError:
                 pass
-            self.log("Found!")
+            for i in range(0,len(self.vertice)):
+                if(self.idx==self.vertice[i]):
+                    self.log('Selected Line causing Loop!')
+                    break
+                elif(i+1>=len(self.vertice)):
+                    self.log("Found!")
             # self.lines.pop(0)
             self.secondcanvas.after(1000,self.backmenormal)
 
@@ -633,7 +638,9 @@ class Gui(ttk.Frame):
                         self.popWindow(labeltext='Masukkan sembarang Vertex')
                         self.wait_window(self.top)
 
-                animatedprims=self.myobject.Compute('Prims',val1=self.popvalue ,val2=self.vertexNum)
+                pholder=self.myobject.Compute('Prims',val1=self.popvalue ,val2=self.vertexNum+1)
+                animatedprims=pholder[0]
+                self.vertice=pholder[1]
                 for i in range(0,len(animatedprims)):
                     self.animatedprim.append([])
                     for j in range(0,len(animatedprims[i])):
@@ -691,9 +698,10 @@ class Gui(ttk.Frame):
             if(note==1):
                 for i in range(0,self.myobject.GetMyMstSize()):
                     holder=self.myobject.GetMyMstAt(i)
-                    # print(holder.GetTag())
-                    linetag=holder.GetTag()
-                    self.lines.append(self.secondcanvas.find_withtag(linetag[0]))
+                    if(holder!='salah'):
+                        linetag=holder.GetTag()
+                        obj=self.secondcanvas.find_withtag(linetag[0])
+                    self.lines.append(obj)
                 if(comboval!='Prims'):
                     if(comboval!='Djikstra'):
                         self.showline()

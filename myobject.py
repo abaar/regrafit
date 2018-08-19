@@ -202,10 +202,17 @@ class MyObject:
 						idx=i
 
 				cyclicchecker.addEdge(self.__myline[mylist[idx]].GetVstart(),self.__myline[mylist[idx]].GetVend())
-				
+				print(str((self.__myline[mylist[idx]].GetVstart(),self.__myline[mylist[idx]].GetVend())))
 				if (cyclicchecker.isCyclic()):
-					cyclicchecker.deleteEdge(self.__myline[mylist[idx]].GetVstart(),self.__myline[mylist[idx]].GetVend())
-					mylist_cyclic.append(mylist[idx])
+					self.__mymst.append("salah")
+					# cyclicchecker.deleteEdge(self.__myline[mylist[idx]].GetVstart(),self.__myline[mylist[idx]].GetVend())
+					cyclicchecker=Graph(val2)
+					for i in range(0,len(self.__mymst)):
+						if(self.__mymst[i]!='salah'):
+							v=self.__mymst[i].GetVend()
+							w=self.__mymst[i].GetVstart()
+							cyclicchecker.addEdge(v,w)
+					mylist_cyclic.append(currentiter)
 					del mylist[idx]
 
 				else:
@@ -232,7 +239,7 @@ class MyObject:
 					del mylist[idx]
 				currentiter+=1
 			del cyclicchecker
-			return listPeriter
+			return (listPeriter,mylist_cyclic)
 		elif (algorithm=="Feury"):
 			self.DelMyMstAll()
 			graph=Graph(val1)
