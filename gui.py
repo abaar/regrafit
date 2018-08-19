@@ -3,6 +3,8 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter import scrolledtext as tkst
 import math
+import webbrowser
+
 from line import Line
 from vertex import Vertex
 from myobject import MyObject
@@ -94,6 +96,10 @@ class Gui(ttk.Frame):
         self.btnStop = ttk.Button(self.toolbar, text="Stop",state='disabled')
         self.btnStop.grid(column=6, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
         self.btnStop.bind("<Button-1>", self.stop)
+
+        self.btnAbout = ttk.Button(self.toolbar, text="About")
+        self.btnAbout.grid(column=7, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
+        self.btnAbout.bind("<Button-1>", self.about)
 
         self.btnRandom = ttk.Button(self.toolbar, text="Random Vertex")
         self.btnRandom.grid(column=3, row=0, sticky=(tk.N, tk.W, tk.E, tk.S), padx=(10,10))
@@ -339,7 +345,7 @@ class Gui(ttk.Frame):
                 else:
                     grad = abs((y2-y1)/(x2-x1))
                     gradcek = abs((y-y1)/(x-x1))
-                    offset = 0.05
+                    offset = 0.06
 
                     # self.log(str(x1)+' '+str(y1)+' '+str(x2)+' '+str(y2))
                     # self.log('gradient asli = '+str(grad))
@@ -520,6 +526,7 @@ class Gui(ttk.Frame):
             self.btnClear.configure(state='disabled')
             self.btnRandom.configure(state='disabled')
             self.btnStop.configure(state='normal')
+            self.btnAbout.configure(state='disabled')
             comboval = self.getComboVal()
             self.myobject.DelMyVertexAll()
             self.myobject.DelMyLineAll()
@@ -754,7 +761,8 @@ class Gui(ttk.Frame):
                 self.btnAdd.configure(state='normal')
             self.btnClear.configure(state='normal')
             self.btnRandom.configure(state='normal')
-            self.btnStop.configure(state='disabled')            
+            self.btnStop.configure(state='disabled')  
+            self.btnAbout.configure(state='normal')          
             allvertex = self.secondcanvas.find_withtag('circle')
             for i in allvertex:
                 self.secondcanvas.itemconfigure(i,fill="#00BCD4",outline='#0097A7')
@@ -774,6 +782,21 @@ class Gui(ttk.Frame):
             self.log(self.mode+' mode on')
             self.btnAdd.configure(state='normal')
             self.btnEdit.configure(state='disabled')
+
+    def about(self,*args):
+        
+        win = tk.Toplevel(padx=30 , pady=10, width=2000)
+        win.title('About Theory Graph is Fun')
+        msg = """Made with ❤ by:
+    Akbar Noto (16-028)
+    Ayas Faikar Nafis (16-138)
+        """
+        ttk.Label(win, text=msg).pack()
+        ttk.Button(win, text='Ok', command=win.destroy).pack(side='left')
+        new = 1
+        url = "https://github.com/abaar/regrafit"
+        ttk.Button(win, text='Github', command=lambda:webbrowser.open(url,new=new)).pack(side='right')
+
 
     def randomVertex(self,*args):
         self.log("Generating graph !")
