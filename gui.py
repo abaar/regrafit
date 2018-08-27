@@ -460,7 +460,7 @@ class Gui(ttk.Frame):
             comboval = self.getComboVal()
             try:
                 nextline=self.lines.pop(0)
-                self.log(nextline)
+                # self.log(nextline)
                 self.secondcanvas.itemconfigure(nextline,state='normal',fill=self.linecolor)
                 self.secondcanvas.after(1000,self.showline)
             except IndexError:
@@ -675,11 +675,18 @@ class Gui(ttk.Frame):
                         self.log(str(lholder.GetVstart())+" - "+str(lholder.GetVend())+" : "+ str(lholder.GetTag()[4]) + " Accepted!")
             elif comboval == 'Naive Coloring':
                 self.log('Running Naive Coloring !')
+                # self.log("")
                 colored=self.myobject.Compute('GColor',val1=self.vertexNum)
                 note=2
             elif comboval == 'Fuery':
                 self.log("Running Feury")
+                self.log("Eulerian Path is a path in graph that visits every edge exactly once. Eulerian Circuit is an Eulerian Path which starts and ends on the same vertex.")
+                self.log("===================")
+                self.log("Feury Algorithm is to find the track of that path or circuit")
+                self.log("More about the algorithm on https://www.geeksforgeeks.org/fleurys-algorithm-for-printing-eulerian-path/\n")
+                
                 if(self.myobject.Compute('Feury',val1=self.vertexNum)==False):
+                    self.log("Perhatikan bahwa didalam algoritma ini mempunyai 'arah'")
                     note=0
                 # self.log('Fuery Run !')
             elif comboval =='N Max Coloring':
@@ -688,10 +695,19 @@ class Gui(ttk.Frame):
                 self.wait_window(self.top)
                 nColour=self.popvalue
                 colored=self.myobject.Compute('BColor',val1=self.vertexNum,val2=nColour)
+                for i in range(1,len(colored)):
+                    if(colored[i][1]!=colored[i-1][1]):
+                        break
+                    elif(i+1>=len(colored)):
+                        if(self.myobject.GetMyLineSize()!=0):
+                            note=99
+                            self.log("Tidak bisa menemukan kombinasi warna-nya!")
+                            self.stop()
                 if(not colored):
-                    note=-1
+                    note=99
                     #kasih warning
                     self.log("Tidak bisa menemukan kombinasi warna-nya!")
+                    self.stop()
                 else:
                     note=2
             #masukin hasil komputasi ke queue line yg akan ditampilkan
@@ -755,7 +771,7 @@ class Gui(ttk.Frame):
             elif(note==0):
                 self.log("Graf yang diberikan bukan 'Eulerian Graph' karena memiliki lebih dari 2 vertex yang berderajat ganjil.")
                 self.stop()
-            self.log("Computation Ended")
+            # self.log("Computation Ended")
             # self.stop()
 
     def stop(self,*args):

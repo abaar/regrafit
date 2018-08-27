@@ -150,7 +150,7 @@ class Graph:
         for v in self.graph[u]:
             #If edge u-v is not removed and it's a a valid next edge
             if self.isValidNextEdge(u, v):
-                self.eupath.append((u,v))
+                self.eupath.append((u+1,v+1))
                 self.rmvEdge(u, v)
                 self.printEulerUtil(v)
  

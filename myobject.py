@@ -84,7 +84,13 @@ class MyObject:
 			for i in range(0,len(self.__myline)):
 				cyclicchecker.addEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
 				if (cyclicchecker.isCyclic()):
-					cyclicchecker.deleteEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
+					# cyclicchecker.deleteEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
+					cyclicchecker=Graph(val1)
+					for i in range(0,len(self.__mymst)):
+						if(self.__mymst[i]!='salah'):
+							v=self.__mymst[i].GetVend()
+							w=self.__mymst[i].GetVstart()
+							cyclicchecker.addEdge(v,w)
 					cycliclist.append(i)
 				else:
 					self.__mymst.append(self.__myline[i])
@@ -245,11 +251,12 @@ class MyObject:
 			graph=Graph(val1)
 
 			for i in range(0,len(self.__myline)):
-				graph.addEdge(self.__myline[i].GetVstart(),self.__myline[i].GetVend())
+				graph.addEdge(self.__myline[i].GetVstart()-1,self.__myline[i].GetVend()-1)
 
 			EulerType=graph.isEulerian()
 			if(EulerType!=0):
 				holder=graph.StartComputeFeury()
+				# print("why?")
 				print(holder)
 				for i in range(0,len(holder)):
 					for j in range(0,len(self.__myline)):
@@ -343,12 +350,7 @@ class MyObject:
 						break
 					completed=True
 				loop+=1
-				#pada baris ini, ketika dijalankan colored yg bernilai False 
-				#maka ada 2 kemungkinan, isolated vertex / graph yang berbeda
-				#isolated vertex pasti bernilai 0, sedangkan graph yang berbeda
-				#akan beda lagi penanganannya
 
-				#salah disini
 			return colored
 		elif(algorithm=='BColor'):
 			self.DelMyMstAll()
@@ -377,13 +379,20 @@ class MyObject:
 			colour=g.graphColouring(maxColour)
 
 			if(not colour):
+				# print("Halah")
 				return False
 
 			realcolour=list()
-			realcolour.append(0)
+			realcolour.append((True,0))
 			for i in range(0,len(self.__myvertex)):
 				realcolour.append((True,colour[self.__myvertex[i].GetIdx()]))
 
+				#pada baris ini, ketika dijalankan colored yg bernilai False 
+				#maka ada 2 kemungkinan, isolated vertex / graph yang berbeda
+				#isolated vertex pasti bernilai 0, sedangkan graph yang berbeda
+				#akan beda lagi penanganannya
+
+				#salah disini
 			return realcolour
 
 			#kari masalah view
