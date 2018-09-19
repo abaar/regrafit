@@ -11,8 +11,7 @@ Features :
 
 How To Use* :
 1. Drawing Graph :
-   a) Click Add mode if you want to add your vertex by clicking the canvas and draw your line by clicking the current vertex you wanna connect
-   b) Click Random Vertex to give you a random vertex
+   a) Click Add mode if you want to add your vertex by clicking the canvas and draw your line by clicking the current vertex you wanna connect\nb) Click Random Vertex to give you a random vertex
    c) Click Edit Mode if you want to delete vertex by right click on it. And move your vertex by dragging it using left click.
 2. Running algorithm :
    a) Choose the available algorithm you want.
